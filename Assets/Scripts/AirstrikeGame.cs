@@ -8,7 +8,7 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
-        public const string Version = "0.2.0";
+        public const string Version = "0.3.0";
         public Material[] Palette;
         public Camera MainCamera;
         public SoldierController Player { get; private set; }
@@ -17,6 +17,7 @@ namespace Airstrike
         public CombatHud Hud { get; private set; }
         public CombatInput Controls { get; private set; }
         public readonly List<EnemyAircraft> Aircraft = new List<EnemyAircraft>();
+        public readonly List<SupplyCrate> Supplies = new List<SupplyCrate>();
         public bool Paused { get; private set; }
         public bool GameOver { get; private set; }
         public bool Playing => !Paused && !GameOver;
@@ -24,7 +25,14 @@ namespace Airstrike
         public int Lives { get; private set; } = 3;
         public int Score { get; private set; }
         public int Kills { get; private set; }
-        public int RocketsAlive, BombsAlive, ShotsFired, Explosions, DigOperations, BombsDropped;
+        public int RocketsAlive, HostileProjectilesAlive, ShotsFired, Explosions, DigOperations, BombsDropped;
+        public int EnemyRocketsFired, HelicopterWarnings, PiercedTargets, SuppliesDropped, SuppliesCollected;
+        public int RocketCapacity { get; private set; } = 1;
+        public bool PiercingEnabled { get; private set; }
+        public int CompletedWaves { get; private set; }
+        public string SupplyMessage { get; private set; }
+        public float SupplyFeedbackUntil { get; private set; }
+        public string WaveName => currentPlan==null?"":currentPlan.Name;
         public int BlockedMuzzleShots, CoverEvents;
         public float LastBlastExposure { get; private set; } = 1;
         public int LastDamageBlocked { get; private set; }
@@ -36,7 +44,8 @@ namespace Airstrike
         public int EnemiesPending { get; private set; }
         public float SurvivalSeconds { get; private set; }
         public float WaveBannerUntil { get; private set; }
-        public float SpawnInterval = 2.6f;
+        public float SpawnInterval = -1;
+        public float WaveOpeningSeconds = 1.4f, WaveIntermissionSeconds = 2.6f;
         public bool OverrideControls;
         public CombatInput TestControls;
         public int BestWave { get; private set; }
@@ -45,6 +54,8 @@ namespace Airstrike
         private Mesh ridgeMesh;
         private readonly AudioClip[] sounds = new AudioClip[4];
         private Vector2 lastAim = new Vector2(-3,9);
+        private WaveDefinition currentPlan;
+        private int spawnCursor;
 
         private void Awake()
         {
@@ -83,14 +94,23 @@ namespace Airstrike
             if (EnemiesPending > 0 && Time.time >= nextSpawn)
             {
                 var direction = Random.value < 0.5f ? 1 : -1;
-                SpawnAircraft(new Vector2(direction>0?-29:29,Random.Range(9.2f,13.8f)),direction);
+                var spec=currentPlan.Spawns[spawnCursor++];
+                var height=spec.Role==AircraftRole.Helicopter?Random.Range(8.5f,10.5f):Random.Range(9.2f,13.8f);
+                SpawnAircraft(new Vector2(direction>0?-29:29,height),direction,spec.Role,spec.Armored);
                 EnemiesPending--;
-                nextSpawn = Time.time + Mathf.Max(1,SpawnInterval-Wave*0.08f);
+                nextSpawn = Time.time + (SpawnInterval>0?SpawnInterval:currentPlan.SpawnSeconds);
             }
             Aircraft.RemoveAll(a=>a==null);
-            if (EnemiesPending == 0 && Aircraft.Count == 0 && BombsAlive == 0)
+            Supplies.RemoveAll(s=>s==null);
+            if (EnemiesPending == 0 && Aircraft.Count == 0 && HostileProjectilesAlive == 0)
             {
-                if (nextWave < 0) nextWave = Time.time + 2.6f;
+                if (nextWave < 0)
+                {
+                    CompletedWaves=Wave;
+                    var reward=WavePlan.Reward(Wave);
+                    if(reward.HasValue) SpawnSupply(reward.Value,new Vector2(Mathf.Clamp(Player.Body.position.x+2,-29,29),Ground.SurfaceAt(Player.Body.position.x)+8));
+                    nextWave = Time.time + WaveIntermissionSeconds;
+                }
                 if (Time.time >= nextWave) { Wave++; BeginWave(); }
             }
         }
@@ -124,18 +144,19 @@ namespace Airstrike
 
         private void BeginWave()
         {
-            EnemiesPending = Mathf.Min(2+Wave,12);
-            nextSpawn = Time.time + 1.4f;
+            currentPlan=WavePlan.Get(Wave); spawnCursor=0;
+            EnemiesPending = currentPlan.Spawns.Count;
+            nextSpawn = Time.time + WaveOpeningSeconds;
             nextWave = -1;
             WaveBannerUntil = Time.time + 3.4f;
         }
 
-        public EnemyAircraft SpawnAircraft(Vector2 position, int direction)
+        public EnemyAircraft SpawnAircraft(Vector2 position, int direction,AircraftRole role=AircraftRole.Bomber,bool armored=false)
         {
             var go = new GameObject("Raider W"+Wave);
             go.transform.position = position;
             var aircraft = go.AddComponent<EnemyAircraft>();
-            aircraft.Initialize(this,direction,Wave);
+            aircraft.Initialize(this,direction,Wave,role,armored);
             Aircraft.Add(aircraft);
             return aircraft;
         }
@@ -146,19 +167,22 @@ namespace Airstrike
             var go = new GameObject("Player rocket"); go.transform.position = origin;
             RocketsAlive++; ShotsFired++;
             var projectile = go.AddComponent<CombatProjectile>();
-            projectile.Initialize(this,direction*27,true);
+            projectile.Initialize(this,direction*27,ProjectileKind.PlayerRocket);
             // Sweep the entire barrel first: a thin wall between the breech and
             // muzzle must receive the impact rather than being skipped at spawn.
             var mask = (1 << GameArt.TerrainLayer) | (1 << GameArt.EnemyLayer);
             if (Physics.CheckSphere(origin,0.1f,mask,QueryTriggerInteraction.Ignore))
             {
                 BlockedMuzzleShots++;
-                projectile.Impact(origin);
+                var overlaps=Physics.OverlapSphere(origin,0.1f,mask,QueryTriggerInteraction.Ignore);
+                Collider contact=null;
+                foreach(var collider in overlaps) { contact=collider; if(collider.gameObject.layer==GameArt.TerrainLayer) break; }
+                projectile.Impact(origin,contact);
             }
             else if (Physics.SphereCast(origin,0.1f,direction,out var hit,1.05f,mask,QueryTriggerInteraction.Ignore))
             {
                 BlockedMuzzleShots++;
-                projectile.Impact(hit.point);
+                projectile.Impact(hit.point,hit.collider);
             }
             else go.transform.position = origin + direction*1.05f;
             Flash(origin+direction*0.8f,0.38f);
@@ -168,11 +192,42 @@ namespace Airstrike
         public void DropBomb(Vector2 position, Vector2 velocity)
         {
             var go = new GameObject("Falling bomb"); go.transform.position = position;
-            BombsAlive++; BombsDropped++;
-            go.AddComponent<CombatProjectile>().Initialize(this,velocity,false);
+            HostileProjectilesAlive++; BombsDropped++;
+            go.AddComponent<CombatProjectile>().Initialize(this,velocity,ProjectileKind.Bomb);
         }
 
-        public void Explode(Vector2 position, bool rocket)
+        public void LaunchEnemyRocket(Vector2 position,Vector2 target)
+        {
+            var go=new GameObject("Helicopter rocket"); go.transform.position=position;
+            HostileProjectilesAlive++; EnemyRocketsFired++;
+            go.AddComponent<CombatProjectile>().Initialize(this,(target-position).normalized*14,ProjectileKind.EnemyRocket);
+            PlaySound(0);
+        }
+
+        public SupplyCrate SpawnSupply(SupplyKind kind,Vector2 position)
+        {
+            Supplies.RemoveAll(s=>s==null);
+            if(Supplies.Count>=3) Supplies[0].Expire();
+            var go=new GameObject("Supply "+kind); go.transform.position=position;
+            var crate=go.AddComponent<SupplyCrate>(); crate.Initialize(this,kind);
+            Supplies.Add(crate); SuppliesDropped++;
+            return crate;
+        }
+
+        public void CollectSupply(SupplyCrate crate)
+        {
+            if(!Supplies.Remove(crate)) return;
+            SuppliesCollected++;
+            if(crate.Kind==SupplyKind.RocketSlot && RocketCapacity<3)
+            { RocketCapacity++; SupplyMessage="ROCKET SLOTS  "+RocketCapacity; }
+            else if(crate.Kind==SupplyKind.Piercing && !PiercingEnabled)
+            { PiercingEnabled=true; SupplyMessage="PIERCING ROCKETS ONLINE"; }
+            else { Score+=150; SupplyMessage="UPGRADE ACTIVE  /  +150 SCORE"; }
+            SupplyFeedbackUntil=Time.time+3;
+            PlaySound(2);
+        }
+
+        public void Explode(Vector2 position, bool rocket,ISet<EnemyAircraft> excludedTargets=null)
         {
             Explosions++;
             // Resolve exposure BEFORE excavating: intact soil absorbs this blast,
@@ -181,7 +236,7 @@ namespace Airstrike
             {
                 var targets = Aircraft.ToArray();
                 foreach (var target in targets)
-                    if (target != null && Vector2.Distance(target.transform.position,position)<3)
+                    if (target != null && (excludedTargets==null || !excludedTargets.Contains(target)) && Vector2.Distance(target.transform.position,position)<3)
                         target.Damage(Mathf.RoundToInt(110*Ground.BlastTransmission(position,target.transform.position)));
             }
             else if (Player.Health > 0)
@@ -225,7 +280,7 @@ namespace Airstrike
         public void AircraftDestroyed(EnemyAircraft aircraft)
         {
             Aircraft.Remove(aircraft);
-            Kills++; Score += 100*Wave;
+            Kills++; Score += aircraft.ScoreValue*Wave;
             Flash(aircraft.transform.position,2.5f);
             PlaySound(1);
             CameraRig.Shake(0.12f);
@@ -238,7 +293,7 @@ namespace Airstrike
             if (Lives <= 0)
             {
                 GameOver = true;
-                BestWave = Mathf.Max(BestWave,Wave-1);
+                BestWave = Mathf.Max(BestWave,CompletedWaves);
                 if (!OverrideControls && !Application.isBatchMode)
                 {
                     PlayerPrefs.SetInt("Skybreach.BestWave",BestWave); PlayerPrefs.Save();

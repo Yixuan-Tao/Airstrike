@@ -45,7 +45,7 @@ public static class BuildPrototype
         RenderSettings.fog=false;
         var game=new GameObject("Skybreach game").AddComponent<AirstrikeGame>();
         game.Palette=palette; game.MainCamera=camera;
-        PlayerSettings.productName="SKYBREACH - Combat Prototype v0.2";
+        PlayerSettings.productName="SKYBREACH - Combat Prototype v0.3";
         PlayerSettings.bundleVersion=AirstrikeGame.Version;
         PlayerSettings.companyName="Independent Prototype";
         PlayerSettings.defaultScreenWidth=1600; PlayerSettings.defaultScreenHeight=900;

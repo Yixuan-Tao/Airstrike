@@ -7,7 +7,7 @@ namespace Airstrike
     {
         private AirstrikeGame game;
         private Font font;
-        private Text wave, score, lives, status, briefing, overlayTitle, overlayBody, coverHint, damageDirection;
+        private Text wave, score, lives, status, briefing, overlayTitle, overlayBody, coverHint, damageDirection, upgrades, waveTitle, supplyHint;
         private RectTransform healthFill, crosshair;
         private GameObject overlay, banner, hitMarker;
         private Image[] reticleBars, hurtEdges;
@@ -31,7 +31,7 @@ namespace Airstrike
             var top=Panel("Command bar",root,new Vector2(0.5f,1),new Vector2(0,-54),new Vector2(1920,108),ink);
             Panel("Accent",top,new Vector2(0,0.5f),new Vector2(15,0),new Vector2(5,60),amber);
             Label(top,new Vector2(0,0.5f),new Vector2(220,10),new Vector2(360,45),"S K Y B R E A C H",31,cream);
-            Label(top,new Vector2(0,0.5f),new Vector2(220,-24),new Vector2(360,24),"FIELD TEST 02   /   DIG. DEFEND. SURVIVE.",15,new Color(0.55f,0.67f,0.7f));
+            Label(top,new Vector2(0,0.5f),new Vector2(220,-24),new Vector2(360,24),"FIELD TEST 03   /   ADAPT TO THE THREAT",15,new Color(0.55f,0.67f,0.7f));
             wave=Label(top,new Vector2(0.5f,0.5f),new Vector2(-100,5),new Vector2(220,45),"WAVE 01",29,cream);
             briefing=Label(top,new Vector2(0.5f,0.5f),new Vector2(100,2),new Vector2(220,44),"03 INBOUND",18,amber);
             score=Label(top,new Vector2(1,0.5f),new Vector2(-135,10),new Vector2(220,45),"000000",31,cream);
@@ -43,9 +43,10 @@ namespace Airstrike
             healthFill=Panel("Health",health,new Vector2(0,0.5f),new Vector2(105,0),new Vector2(206,10),amber);
             Label(root,new Vector2(0,0),new Vector2(117,133),new Vector2(175,24),"SUIT INTEGRITY",14,cream);
             coverHint=Label(root,new Vector2(0,0),new Vector2(260,165),new Vector2(460,28),"",19,new Color(0.55f,0.88f,0.76f));
-            Label(root,new Vector2(1,0),new Vector2(-170,111),new Vector2(280,40),"2.5D  /  PROTOTYPE",16,new Color(0.7f,0.76f,0.72f));
+            upgrades=Label(root,new Vector2(1,0),new Vector2(-270,111),new Vector2(460,40),"ROCKET SLOTS 1 / STANDARD",16,new Color(0.7f,0.76f,0.72f));
+            supplyHint=Label(root,new Vector2(0.5f,0),new Vector2(0,112),new Vector2(600,40),"",22,amber,TextAnchor.MiddleCenter);
             banner=Panel("Wave banner",root,new Vector2(0.5f,0.5f),new Vector2(0,120),new Vector2(530,105),ink).gameObject;
-            Label(banner.transform,new Vector2(0.5f,0.5f),new Vector2(0,15),new Vector2(490,45),"HOLD THE LINE",34,amber,TextAnchor.MiddleCenter);
+            waveTitle=Label(banner.transform,new Vector2(0.5f,0.5f),new Vector2(0,15),new Vector2(490,45),"FIRST CONTACT",34,amber,TextAnchor.MiddleCenter);
             Label(banner.transform,new Vector2(0.5f,0.5f),new Vector2(0,-25),new Vector2(490,30),"DIG FOR COVER. SOIL ABSORBS BLASTS.",16,cream,TextAnchor.MiddleCenter);
             crosshair=Panel("Crosshair",root,new Vector2(0.5f,0.5f),Vector2.zero,new Vector2(28,28),Color.clear);
             Panel("Cross left",crosshair,new Vector2(0.5f,0.5f),new Vector2(-12,0),new Vector2(7,2),amber);
@@ -76,8 +77,14 @@ namespace Airstrike
             var threats=game.EnemiesPending+game.Aircraft.Count;
             briefing.text=threats>0?threats.ToString("00")+" INBOUND":"SECTOR CLEAR";
             score.text=game.Score.ToString("000000"); lives.text="LIVES  "+game.Lives;
-            status.text=(game.RocketsAlive==0?"ROCKET READY":"ROCKET IN FLIGHT")+"    /    JUMPS "+game.Player.JumpsLeft;
+            status.text=(game.RocketsAlive<game.RocketCapacity?"ROCKET READY":"SLOTS FULL")+"    /    JUMPS "+game.Player.JumpsLeft;
             if(game.RocketsAlive==0 && game.Player.BarrelBlocked) status.text="MUZZLE BLOCKED    /    JUMPS "+game.Player.JumpsLeft;
+            upgrades.text="ROCKET SLOTS "+game.RocketsAlive+"/"+game.RocketCapacity+" / "+(game.PiercingEnabled?"PIERCING":"STANDARD");
+            waveTitle.text=game.WaveName;
+            var warning=false;
+            foreach(var aircraft in game.Aircraft) if(aircraft!=null && aircraft.IsTelegraphing) warning=true;
+            supplyHint.text=warning?"ROCKET LOCK  /  MOVE FROM THE LINE":Time.time<game.SupplyFeedbackUntil?game.SupplyMessage:
+                game.Supplies.Count>0?"SUPPLY INBOUND  /  WALK TO COLLECT":"";
             coverHint.text=game.Playing && Time.time<game.CoverFeedbackUntil
                 ? "COVER ABSORBED "+Mathf.RoundToInt(game.LastCoverAbsorption*100)+"%"
                 : game.Player.Protected && game.Player.Health>0 ? "RESPAWN SHIELD" : "";
@@ -91,7 +98,7 @@ namespace Airstrike
             if(game.GameOver)
             {
                 overlayTitle.text="SIGNAL LOST";
-                overlayBody.text="WAVES HELD  "+(game.Wave-1)+"     /     KILLS  "+game.Kills+"\nSCORE  "+game.Score+"     /     BEST WAVE  "+game.BestWave+"\n\nR  REDEPLOY       Q  QUIT";
+                overlayBody.text="WAVES HELD  "+game.CompletedWaves+"     /     KILLS  "+game.Kills+"\nSCORE  "+game.Score+"     /     BEST WAVE  "+game.BestWave+"\n\nR  REDEPLOY       Q  QUIT";
             }
             else if(game.Paused)
             {

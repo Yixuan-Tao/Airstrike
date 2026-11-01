@@ -72,7 +72,7 @@ namespace Airstrike
             gun.rotation = Quaternion.Euler(0,0,Mathf.Atan2(AimDirection.y,AimDirection.x)*Mathf.Rad2Deg);
             BarrelBlocked = Physics.CheckSphere((Vector2)gun.position, 0.1f, 1 << GameArt.TerrainLayer)
                 || Physics.SphereCast((Vector2)gun.position, 0.1f, AimDirection, out _, 1.05f, 1 << GameArt.TerrainLayer);
-            if (input.fire && Time.time >= nextShot && game.RocketsAlive < 1)
+            if (input.fire && Time.time >= nextShot && game.RocketsAlive < game.RocketCapacity)
             {
                 nextShot = Time.time + 0.3f;
                 game.LaunchRocket(gun.position, AimDirection);

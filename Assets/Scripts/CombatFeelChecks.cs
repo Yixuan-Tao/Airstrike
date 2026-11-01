@@ -77,7 +77,7 @@ namespace Airstrike
             fixtures=new GameObject("Acceptance thin wall");
             Box(fixtures.transform,new Vector3(-11.4f,player.Body.position.y,0),new Vector3(0.12f,4,3));
             var target=game.SpawnAircraft((Vector2)player.Body.position+new Vector2(4.5f,0.18f),1);
-            target.Speed=0; target.DropBombs=false;
+            target.Speed=0; target.AttacksEnabled=false;
             Physics.SyncTransforms();
             var shots=game.ShotsFired; var blocked=game.BlockedMuzzleShots; var targetHealth=target.Health;
             yield return Pulse(game,new CombatInput { fire=true,aim=target.transform.position });

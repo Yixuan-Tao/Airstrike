@@ -27,12 +27,19 @@ namespace Airstrike
             public float coverExposure, breachedExposure;
             public string stage;
             public List<string> observations = new List<string>();
+            public int fastBurstBombs, helicopterWarnings, aimedEnemyRockets, suppliesPickedUp, upgradedCapacity;
+            public int piercingKills, armoredPiercingHealth, authoredWavesCleared, waveSupplyDrops;
+            public int defaultMaximumRockets;
+            public int maximumCapacity, duplicateSupplyBonus;
+            public bool upgradesSurviveRespawn;
+            public List<string> waveObservations = new List<string>();
         }
         private static GameplayAutomation active;
         private AirstrikeGame game;
         private string reportPath;
         private readonly Report report = new Report();
         private bool freezeAircraft, finished;
+        private readonly HashSet<EnemyAircraft> liveFixtures=new HashSet<EnemyAircraft>();
         private float started;
 
         public static void AttachIfRequested(AirstrikeGame owner)
@@ -63,8 +70,8 @@ namespace Airstrike
             report.maximumRockets=Mathf.Max(report.maximumRockets,game.RocketsAlive);
             if(freezeAircraft)
                 foreach(var aircraft in game.Aircraft)
-                    if(aircraft!=null) { aircraft.Speed=0; aircraft.DropBombs=false; }
-            if(Time.realtimeSinceStartup-started>80) Finish("Acceptance run timed out at: "+report.stage);
+                    if(aircraft!=null && !liveFixtures.Contains(aircraft)) { aircraft.Speed=0; aircraft.AttacksEnabled=false; }
+            if(Time.realtimeSinceStartup-started>120) Finish("Acceptance run timed out at: "+report.stage);
         }
 
         private IEnumerator Run()
@@ -97,7 +104,7 @@ namespace Airstrike
             Check(fixture!=null && fixture.transform.position.x-aircraftStart.x>3,"Enemy aircraft traverses the arena.");
             Check(game.BombsDropped>bombsBefore,"Enemy AI drops a live bomb near the player.");
             freezeAircraft=true;
-            foreach(var aircraft in game.Aircraft) { aircraft.Speed=0; aircraft.DropBombs=false; }
+            foreach(var aircraft in game.Aircraft) { aircraft.Speed=0; aircraft.AttacksEnabled=false; }
             foreach(var projectile in UnityEngine.Object.FindObjectsByType<CombatProjectile>(FindObjectsSortMode.None))
                 if(!projectile.IsPlayerRocket) projectile.Cancel();
 
@@ -164,7 +171,7 @@ namespace Airstrike
                 foreach(var enemy in game.Aircraft) if(enemy!=null) { target=enemy; break; }
                 if(target!=null)
                 {
-                    target.Speed=0; target.DropBombs=false;
+                    target.Speed=0; target.AttacksEnabled=false;
                     target.transform.position=game.Player.transform.position+new Vector3(6,6,0);
                     game.TestControls=new CombatInput { fire=true,aim=target.transform.position };
                 }
@@ -175,9 +182,11 @@ namespace Airstrike
             Check(game.Kills>=3 && game.Score>=300,"Aimed rockets destroy aircraft and award score.");
             Check(game.Wave>=2,"Clearing all threats advances the wave.");
             Check(report.maximumRockets==1,"Held fire respects one simultaneous rocket.");
+            report.defaultMaximumRockets=report.maximumRockets;
             report.kills=game.Kills; report.score=game.Score; report.terrainCellsRemoved=game.Ground.RemovedCount;
 
             yield return CombatFeelChecks.Run(game,report,Check);
+            yield return BattleVarietyChecks.Run(game,report,Check,AllowLiveFixture);
 
             game.TestControls=new CombatInput { pause=true };
             yield return null;
@@ -208,7 +217,8 @@ namespace Airstrike
                 game.TestControls=new CombatInput { restart=true };
                 yield return null;
                 yield return null;
-                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0,"Restart reloads a clean battlefield and resets the run, pass "+(restart+1)+".");
+                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0 && game.RocketCapacity==1 && !game.PiercingEnabled && game.Supplies.Count==0,
+                    "Restart resets the battlefield, upgrades and supplies, pass "+(restart+1)+".");
                 report.restarts++;
             }
             Check(report.runtimeErrors==0,"No runtime errors or exceptions during acceptance.");
@@ -220,6 +230,9 @@ namespace Airstrike
             if(!condition) throw new InvalidOperationException(description);
             report.checks.Add(description);
         }
+
+        private void AllowLiveFixture(EnemyAircraft aircraft,bool allow)
+        { if(allow) liveFixtures.Add(aircraft); else liveFixtures.Remove(aircraft); }
 
         private string JumpState()
         {

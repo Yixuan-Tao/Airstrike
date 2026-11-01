@@ -1,4 +1,4 @@
-param([int]$TimeoutSeconds = 90)
+param([int]$TimeoutSeconds = 130)
 $ErrorActionPreference = 'Stop'
 $projectPath = Split-Path $PSScriptRoot -Parent
 $executable = Join-Path $projectPath 'Builds\Skybreach\Skybreach.exe'
