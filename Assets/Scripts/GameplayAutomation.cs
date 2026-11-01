@@ -31,6 +31,9 @@ namespace Airstrike
             public int piercingKills, armoredPiercingHealth, authoredWavesCleared, waveSupplyDrops;
             public int defaultMaximumRockets;
             public int maximumCapacity, duplicateSupplyBonus;
+            public int visualPoolSize, visualPeakActive;
+            public float visualStrideDistance;
+            public bool visualReturnedInactive;
             public bool upgradesSurviveRespawn;
             public List<string> waveObservations = new List<string>();
         }
@@ -187,6 +190,7 @@ namespace Airstrike
 
             yield return CombatFeelChecks.Run(game,report,Check);
             yield return BattleVarietyChecks.Run(game,report,Check,AllowLiveFixture);
+            yield return PresentationChecks.Run(game,report,Check);
 
             game.TestControls=new CombatInput { pause=true };
             yield return null;

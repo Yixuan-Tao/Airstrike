@@ -27,12 +27,22 @@ public static class BuildPrototype
             Make("Ridge",new Color(0.14f,0.23f,0.27f)),
             Make("Dark",new Color(0.07f,0.12f,0.15f)),
             Make("Flash",new Color(1,0.65f,0.21f),true),
-            Make("Sun",new Color(0.84f,0.63f,0.38f),true)
+            Make("Sun",new Color(0.98f,0.72f,0.38f),true),
+            Make("SkyGradient",Color.white,true,"Airstrike/VertexSky"),
+            Make("FarRidge",new Color(0.31f,0.43f,0.46f),true),
+            Make("MidRidge",new Color(0.19f,0.32f,0.37f),true),
+            Make("NearRidge",new Color(0.11f,0.23f,0.28f),true),
+            Make("Cloud",new Color(0.39f,0.48f,0.49f),true),
+            Make("Subsoil",new Color(0.44f,0.28f,0.20f)),
+            Make("Sandstone",new Color(0.63f,0.44f,0.28f)),
+            Make("Smoke",new Color(0.21f,0.24f,0.25f),true),
+            Make("Cloth",new Color(0.82f,0.72f,0.52f)),
+            Make("Steel",new Color(0.42f,0.49f,0.48f))
         };
         var camera=new GameObject("Main Camera",typeof(Camera),typeof(AudioListener)).GetComponent<Camera>();
-        camera.tag="MainCamera"; camera.transform.position=new Vector3(-4,7.4f,-32);
+        camera.tag="MainCamera"; camera.transform.position=new Vector3(-4,BattleCamera.Height,-32);
         camera.transform.rotation=Quaternion.Euler(8,0,0);
-        camera.orthographic=true; camera.orthographicSize=12.5f;
+        camera.orthographic=true; camera.orthographicSize=BattleCamera.ViewSize;
         camera.nearClipPlane=0.1f; camera.farClipPlane=120;
         camera.clearFlags=CameraClearFlags.SolidColor;
         camera.backgroundColor=new Color(0.075f,0.13f,0.18f);
@@ -45,7 +55,7 @@ public static class BuildPrototype
         RenderSettings.fog=false;
         var game=new GameObject("Skybreach game").AddComponent<AirstrikeGame>();
         game.Palette=palette; game.MainCamera=camera;
-        PlayerSettings.productName="SKYBREACH - Combat Prototype v0.3";
+        PlayerSettings.productName="SKYBREACH - Combat Prototype v0.4";
         PlayerSettings.bundleVersion=AirstrikeGame.Version;
         PlayerSettings.companyName="Independent Prototype";
         PlayerSettings.defaultScreenWidth=1600; PlayerSettings.defaultScreenHeight=900;
@@ -60,17 +70,18 @@ public static class BuildPrototype
         return new {scene=path,saved=!scene.isDirty,paletteMaterials=palette.Length,gameplay="runtime procedural world"};
     }
 
-    private static Material Make(string name,Color color,bool unlit=false)
+    private static Material Make(string name,Color color,bool unlit=false,string shaderName=null)
     {
         var path="Assets/Art/Prototype/"+name+".mat";
         var material=AssetDatabase.LoadAssetAtPath<Material>(path);
         if(material==null)
         {
-            var shader=Shader.Find(unlit?"Universal Render Pipeline/Unlit":"Universal Render Pipeline/Lit");
+            var shader=Shader.Find(shaderName??(unlit?"Universal Render Pipeline/Unlit":"Universal Render Pipeline/Lit"));
             if(shader==null) throw new InvalidOperationException("Required URP shader is unavailable.");
             material=new Material(shader); AssetDatabase.CreateAsset(material,path);
         }
-        material.SetColor("_BaseColor",color);
+        if(ShaderUtil.ShaderHasError(material.shader)) throw new InvalidOperationException("Shader compile failed: "+material.shader.name);
+        if(material.HasProperty("_BaseColor")) material.SetColor("_BaseColor",color);
         if(material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness",0.12f);
         EditorUtility.SetDirty(material); return material;
     }

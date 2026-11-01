@@ -60,39 +60,4 @@ namespace Airstrike
             return rotor;
         }
     }
-
-    public sealed class BlastVisual : MonoBehaviour
-    {
-        private float age;
-        private float radius;
-        private Transform core;
-        private LineRenderer ring;
-
-        public void Initialize(float size, Material glow)
-        {
-            radius = size;
-            core = GameArt.Shape("Flash", PrimitiveType.Sphere, transform, Vector3.zero, Vector3.one * 0.15f, glow).transform;
-            ring = new GameObject("Shock ring").AddComponent<LineRenderer>();
-            ring.transform.SetParent(transform, false);
-            ring.useWorldSpace = false;
-            ring.loop = true;
-            ring.positionCount = 40;
-            ring.sharedMaterial = glow;
-            ring.widthMultiplier = 0.07f;
-        }
-
-        private void Update()
-        {
-            age += Time.deltaTime;
-            var t = age / 0.42f;
-            if (t >= 1) { Destroy(gameObject); return; }
-            core.localScale = Vector3.one * Mathf.Lerp(0.3f, radius * 0.65f, Mathf.Sin(t * Mathf.PI));
-            ring.widthMultiplier = (1 - t) * 0.09f;
-            for (var i = 0; i < 40; i++)
-            {
-                var angle = i * Mathf.PI * 2 / 40;
-                ring.SetPosition(i, new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), -0.2f) * radius * t);
-            }
-        }
-    }
 }

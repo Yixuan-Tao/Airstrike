@@ -2,9 +2,9 @@
   "passed": true,
   "error": "",
   "unityVersion": "6000.3.27f2",
-  "prototypeVersion": "0.3.0",
+  "prototypeVersion": "0.4.0",
   "isEditor": false,
-  "durationSeconds": 37.66231918334961,
+  "durationSeconds": 40.33666229248047,
   "checks": [
     "Gravity and ground collision settle the player.",
     "Enemy aircraft traverses the arena.",
@@ -55,6 +55,11 @@
     "The live scheduler progresses through all six authored waves and introduces the intended threats.",
     "Clearing waves two, four and six produces exactly one supply reward each.",
     "Endless waves keep a bounded enemy budget.",
+    "The articulated player model retains the established physical capsule.",
+    "The character visual updates its walking pose during real movement.",
+    "Overlapping explosions reuse a bounded visual-effects pool.",
+    "Smoke, fragments and shockwaves return to the pool after their lifetime.",
+    "The layered battlefield backdrop is present after wave progression.",
     "Pause freezes the simulation.",
     "Resume restores simulation time.",
     "Lethal damage consumes one life.",
@@ -86,9 +91,9 @@
   "breachedExposure": 1.0,
   "stage": "No runtime errors or exceptions during acceptance.",
   "observations": [
-    "Before jump: time=3.154519, grounded=True, charges=2, jumps=0, coyote=0, position=(-1.73, 0.84, 0.00), velocity=(7.50, 0.34, 0.00), hp=100, explosions=0",
-    "After first jump: time=3.321187, grounded=False, charges=1, jumps=1, coyote=0, position=(-0.94, 2.06, 0.00), velocity=(1.72, 6.93, 0.00), hp=100, explosions=0",
-    "After second jump: time=3.62119, grounded=False, charges=0, jumps=2, coyote=0, position=(-0.91, 4.14, 0.00), velocity=(0.00, 5.56, 0.00), hp=100, explosions=0"
+    "Before jump: time=3.155096, grounded=True, charges=2, jumps=0, coyote=0, position=(-1.73, 0.84, 0.00), velocity=(7.50, 0.34, 0.00), hp=100, explosions=0",
+    "After first jump: time=3.321767, grounded=False, charges=1, jumps=1, coyote=0, position=(-0.94, 2.06, 0.00), velocity=(1.72, 6.93, 0.00), hp=100, explosions=0",
+    "After second jump: time=3.621773, grounded=False, charges=0, jumps=2, coyote=0, position=(-0.91, 4.14, 0.00), velocity=(0.00, 5.56, 0.00), hp=100, explosions=0"
   ],
   "fastBurstBombs": 3,
   "helicopterWarnings": 1,
@@ -102,6 +107,10 @@
   "defaultMaximumRockets": 1,
   "maximumCapacity": 3,
   "duplicateSupplyBonus": 300,
+  "visualPoolSize": 16,
+  "visualPeakActive": 16,
+  "visualStrideDistance": 13.185420989990234,
+  "visualReturnedInactive": true,
   "upgradesSurviveRespawn": true,
   "waveObservations": [
     "2: FAST MOVERS / 4 scheduled",

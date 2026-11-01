@@ -1,12 +1,22 @@
-# Airstrike / SKYBREACH v0.3.0
+# Airstrike / SKYBREACH v0.4.0
 
 Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，通过地形掩护躲避轰炸。
 
 ![运行场景预览](Docs/Images/skybreach.png)
 
-画面为自制占位简模。预览由真实运行场景离屏生成，调整过敌机与坑洞位置，不是人工实玩录像。
+画面采用自制的低模美术初版，仍会继续打磨。预览由真实运行场景离屏生成，调整过敌机与坑洞位置，不是人工实玩录像。
 
-## v0.3 的新增内容
+## v0.4 的画面更新
+
+- 黄昏工业荒原场景：渐变天空、低位落日、三层远山、缓慢移动的云与工业剪影。
+- 分节士兵模型：头盔、面部、护甲、背包和武器细节，行走、空中姿态与倒地表现；物理胶囊尺寸保持原值。
+- 地形断面区分草皮、砂土、深层土与岩层；新挖出的坑底显示裸土，不会立即长草。
+- 爆炸加入闪光、冲击波、烟尘和碎屑；最多复用 16 组特效，到期回收，不无限增加对象。
+- 调整相机取景，为顶部威胁和深坑留出空间；场景有视差，玩法仍约束在同一战斗平面。
+
+美术、几何和天空着色器由本工程代码生成，本版未导入外部模型或贴图。外观检查采用实际离屏渲染；无图形验收仅覆盖状态、资源回收和玩法回归，不代表画面性能。
+
+## 战斗与补给
 
 - 高速投弹机：速度更快，接近玩家时连续投下三枚炸弹。
 - 火箭直升机：移动到玩家附近悬停，显示约 0.85 秒瞄准线后向预警时的位置发射火箭；火箭不会追踪玩家。
@@ -82,7 +92,7 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 & './AgentScripts/VerifyStandalone.ps1'
 ```
 
-通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.3.0-Windows.zip`。
+通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.4.0-Windows.zip`。
 
 独立程序与依赖位于 `Builds/Skybreach`；复制给其他电脑时需要整个文件夹。Unity 缓存、构建输出和本机日志不入库。
 
@@ -96,7 +106,7 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 
 - `Assets/Scenes/Prototype.unity`：游戏入口，运行时生成战场。
 - `Assets/Scripts/`：操作、敌机、战斗、掩体判定、地形和界面。
-- `GameplayAutomation.cs`、`CombatFeelChecks.cs`、`BattleVarietyChecks.cs`：仅通过验收参数启用的自动检查。
+- `GameplayAutomation.cs`、`CombatFeelChecks.cs`、`BattleVarietyChecks.cs`、`PresentationChecks.cs`：仅通过验收参数启用的检查。
 - `Assets/Art/Prototype/`：构建使用的材质。
 - `AgentScripts/BuildPrototype.cs`：通过 Unity API 重建入口和材质。
 - `AgentScripts/ArrangePreview.cs`、`CapturePrototype.cs`：后台场景预览。

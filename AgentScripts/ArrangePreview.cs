@@ -10,7 +10,14 @@ public static class ArrangePreview
         if(game==null) throw new System.InvalidOperationException("Open Assets/Scenes/Prototype.unity and enter Play Mode first.");
         game.OverrideControls=true;
         game.TestControls=new CombatInput { aim=new Vector2(3,10) };
-        foreach(var old in game.Aircraft.ToArray()) if(old!=null) old.Damage(1000);
+        foreach(var old in game.Aircraft.ToArray())
+        {
+            if(old==null) continue;
+            old.GetComponent<Collider>().enabled=false;
+            game.Aircraft.Remove(old);
+            Object.Destroy(old.gameObject);
+        }
+        foreach(var projectile in Object.FindObjectsByType<CombatProjectile>(FindObjectsSortMode.None)) projectile.Cancel();
         var roles=new[] {AircraftRole.Bomber,AircraftRole.Helicopter,AircraftRole.FastBomber};
         for(var i=0;i<roles.Length;i++)
         {

@@ -24,7 +24,7 @@ namespace Airstrike
         public bool Protected => Time.time < protectedUntil;
         private AirstrikeGame game;
         private Transform gun;
-        private Renderer suit;
+
         private PhysicsMaterial friction;
         private float protectedUntil, nextShot, nextDig, groundLock;
         public const float CoyoteSeconds = 0.12f, JumpBufferSeconds = 0.14f;
@@ -44,15 +44,14 @@ namespace Airstrike
             Body.constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotation;
             Body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             Body.interpolation = RigidbodyInterpolation.Interpolate;
-            var coat = GameArt.Shape("Coat", PrimitiveType.Capsule, transform, new Vector3(0,-0.08f,0), new Vector3(0.65f,0.65f,0.65f), game.Palette[3]);
-            suit = coat.GetComponent<Renderer>();
-            GameArt.Shape("Helmet", PrimitiveType.Sphere, transform, new Vector3(0,0.61f,0), new Vector3(0.72f,0.38f,0.68f), game.Palette[4]);
-            GameArt.Shape("Visor", PrimitiveType.Cube, transform, new Vector3(0,0.55f,-0.32f), new Vector3(0.44f,0.14f,0.08f), game.Palette[7]);
-            GameArt.Shape("Boot L", PrimitiveType.Cube, transform, new Vector3(-0.18f,-0.68f,0), new Vector3(0.24f,0.28f,0.54f), game.Palette[2]);
-            GameArt.Shape("Boot R", PrimitiveType.Cube, transform, new Vector3(0.18f,-0.68f,0), new Vector3(0.24f,0.28f,0.54f), game.Palette[2]);
+            var model = new GameObject("Soldier model",typeof(SoldierAppearance));
+            model.transform.SetParent(transform,false);
+            model.GetComponent<SoldierAppearance>().Initialize(this,game.Palette);
             gun = new GameObject("Launcher pivot").transform;
             gun.SetParent(transform,false); gun.localPosition = new Vector3(0,0.18f,-0.34f);
-            GameArt.Shape("Launcher", PrimitiveType.Cube, gun, new Vector3(0.43f,0,0), new Vector3(1.05f,0.23f,0.25f), game.Palette[4]);
+            GameArt.Shape("Launcher tube",PrimitiveType.Cylinder,gun,new Vector3(0.43f,0,0),new Vector3(0.20f,0.50f,0.20f),game.Palette[19]).transform.localRotation=Quaternion.Euler(0,0,90);
+            GameArt.Shape("Launcher stock",PrimitiveType.Cube,gun,new Vector3(-0.12f,0,0),new Vector3(0.25f,0.25f,0.28f),game.Palette[4]);
+            GameArt.Shape("Launcher sight",PrimitiveType.Cube,gun,new Vector3(0.4f,0.18f,0),new Vector3(0.25f,0.12f,0.12f),game.Palette[7]);
             GameArt.Shape("Muzzle band", PrimitiveType.Cube, gun, new Vector3(0.91f,0,0), new Vector3(0.1f,0.3f,0.3f), game.Palette[3]);
             Respawn();
         }
@@ -84,7 +83,6 @@ namespace Airstrike
                 var removed = game.Ground.Carve(center,0.72f);
                 if (removed > 0) game.DigOperations++;
             }
-            if (suit != null) suit.enabled = !Protected || Mathf.Repeat(Time.time,0.15f) < 0.1f;
         }
 
         private void FixedUpdate()
@@ -169,7 +167,7 @@ namespace Airstrike
             Body.position = new Vector3(-6,game.Ground.SurfaceAt(-6)+0.9f,0);
             Body.linearVelocity = Vector3.zero;
             protectedUntil = Time.time + 2.2f;
-            suit.enabled = true;
+
         }
 
         private void OnDestroy() { if (friction != null) Destroy(friction); }

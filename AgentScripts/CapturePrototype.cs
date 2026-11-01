@@ -18,6 +18,9 @@ public static class CapturePrototype
             GraphicsSettings.useScriptableRenderPipelineBatching=false;
             camera.targetTexture=rt;
             Canvas.ForceUpdateCanvases();
+            // Let camera-space UI settle its layout/font atlas at the export size.
+            camera.Render();
+            Canvas.ForceUpdateCanvases();
             camera.Render(); RenderTexture.active=rt;
             texture.ReadPixels(new Rect(0,0,1600,900),0,0); texture.Apply();
             var path=Path.GetFullPath("Screenshots/skybreach.png");

@@ -8,12 +8,13 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
-        public const string Version = "0.3.0";
+        public const string Version = "0.4.0";
         public Material[] Palette;
         public Camera MainCamera;
         public SoldierController Player { get; private set; }
         public DestructibleGround Ground { get; private set; }
         public BattleCamera CameraRig { get; private set; }
+        public BattleEffects Effects { get; private set; }
         public CombatHud Hud { get; private set; }
         public CombatInput Controls { get; private set; }
         public readonly List<EnemyAircraft> Aircraft = new List<EnemyAircraft>();
@@ -51,7 +52,7 @@ namespace Airstrike
         public int BestWave { get; private set; }
         private float nextSpawn, nextWave = -1, respawnAt = -1;
         private AudioSource audioSource;
-        private Mesh ridgeMesh;
+
         private readonly AudioClip[] sounds = new AudioClip[4];
         private Vector2 lastAim = new Vector2(-3,9);
         private WaveDefinition currentPlan;
@@ -62,11 +63,13 @@ namespace Airstrike
             Time.timeScale = 1;
             Application.targetFrameRate = 120;
             QualitySettings.vSyncCount = 1;
-            if (Palette == null || Palette.Length < 10) { Debug.LogError("Game palette is missing."); enabled = false; return; }
+            if (Palette == null || Palette.Length < 20) { Debug.LogError("Game palette is missing."); enabled = false; return; }
             if (MainCamera == null) MainCamera = Camera.main;
             Ground = new GameObject("Destructible battlefield").AddComponent<DestructibleGround>();
-            Ground.Initialize(Palette[0],Palette[1],Palette[2]);
+            Ground.Initialize(Palette[0],Palette[1],Palette[2],Palette[15],Palette[16]);
             BuildBackdrop();
+            Effects=new GameObject("Battle effects pool").AddComponent<BattleEffects>();
+            Effects.Initialize(Palette);
             Player = new GameObject("Soldier").AddComponent<SoldierController>();
             Player.Initialize(this);
             CameraRig = MainCamera.gameObject.AddComponent<BattleCamera>();
@@ -273,8 +276,7 @@ namespace Airstrike
 
         public void Flash(Vector2 position, float radius)
         {
-            var go = new GameObject("Blast flash"); go.transform.position = new Vector3(position.x,position.y,-0.15f);
-            go.AddComponent<BlastVisual>().Initialize(radius,Palette[8]);
+            Effects.Emit(position,radius);
         }
 
         public void AircraftDestroyed(EnemyAircraft aircraft)
@@ -307,34 +309,8 @@ namespace Airstrike
 
         private void BuildBackdrop()
         {
-            var root = new GameObject("Backdrop").transform;
-            var ridge = new GameObject("Distant ridgeline",typeof(MeshFilter),typeof(MeshRenderer));
-            ridge.transform.SetParent(root,false);
-            var vertices=new List<Vector3>();
-            var indices=new List<int>();
-            for (var i=0;i<=28;i++)
-            {
-                var x=-70+i*5;
-                var height=4.7f+Mathf.PerlinNoise(i*0.55f,3)*5;
-                vertices.Add(new Vector3(x,-12,15)); vertices.Add(new Vector3(x,height,15));
-                if(i==0) continue;
-                var n=(i-1)*2;
-                indices.Add(n); indices.Add(n+1); indices.Add(n+3);
-                indices.Add(n); indices.Add(n+3); indices.Add(n+2);
-            }
-            ridgeMesh=new Mesh {name="Continuous mountain silhouette"};
-            ridgeMesh.SetVertices(vertices); ridgeMesh.SetTriangles(indices,0);
-            ridgeMesh.RecalculateNormals(); ridgeMesh.RecalculateBounds();
-            ridge.GetComponent<MeshFilter>().sharedMesh=ridgeMesh;
-            var ridgeRenderer=ridge.GetComponent<MeshRenderer>();
-            ridgeRenderer.sharedMaterial=Palette[6]; ridgeRenderer.receiveShadows=false;
-            ridgeRenderer.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
-            for (var i=0;i<9;i++)
-            {
-                var tower = GameArt.Shape("Distant tower",PrimitiveType.Cube,root,new Vector3(-35+i*9,0.8f,10),new Vector3(0.18f,3.8f,0.25f),Palette[7]);
-                GameArt.Shape("Tower crossbar",PrimitiveType.Cube,tower.transform,new Vector3(0,0.2f,0),new Vector3(9,0.035f,1),Palette[7]);
-            }
-            GameArt.Shape("Sun",PrimitiveType.Sphere,root,new Vector3(14,10.5f,24),Vector3.one*3.4f,Palette[9]);
+            var backdrop=new GameObject("Battlefield backdrop").AddComponent<BattleBackdrop>();
+            backdrop.Initialize(Palette,MainCamera);
         }
 
         private void CreateSounds()
@@ -364,7 +340,7 @@ namespace Airstrike
         {
             Time.timeScale=1;
             foreach(var clip in sounds) if(clip!=null) Destroy(clip);
-            if(ridgeMesh!=null) Destroy(ridgeMesh);
+
             if (!Application.isBatchMode && !Application.isEditor) Cursor.visible=true;
         }
     }
