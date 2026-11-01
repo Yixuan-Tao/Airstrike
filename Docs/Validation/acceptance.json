@@ -1,0 +1,42 @@
+{
+  "checked_at": "2026-11-01T08:02:29.6708623+08:00",
+  "prototype": "SKYBREACH v0.1",
+  "entry_scene": "Assets/Scenes/Prototype.unity",
+  "unity_version": "6000.3.27f2",
+  "urp_version": "17.3.0",
+  "build": {
+    "status": "completed",
+    "result": "Succeeded",
+    "buildId": "build_a84661811a00",
+    "platform": "StandaloneWindows64",
+    "totalSizeBytes": 103736895,
+    "buildTimeMs": 13752,
+    "totalErrors": 0,
+    "totalWarnings": 0
+  },
+  "build_output": "Builds/Skybreach/Skybreach.exe",
+  "gameplay_assembly_sha256": "61AB7E89236998C1ADB2BFF4BD1131071E3494429EB31A5EE0233E49414F3FD5",
+  "standalone_exit_code": 0,
+  "standalone_report": "Docs/Validation/standalone.json",
+  "frame_progress": {
+    "state": "met",
+    "met": true,
+    "timedOut": false,
+    "member": "UnityEngine.Time.frameCount",
+    "op": "changed",
+    "value": 956,
+    "initialValue": 943,
+    "elapsedMs": 109,
+    "framesObserved": 2
+  },
+  "preview": "Docs/Images/skybreach.png",
+  "preview_staged": true,
+  "verification_limits": [
+    "Internal game-control inputs, not OS keyboard/mouse automation.",
+    "Targets are immobilized during repeatable shooting checks; normal AI flight and bomb release are tested separately.",
+    "Standalone acceptance uses nographics and noaudio; manual input feel, sound and sustained graphical performance remain unverified."
+  ],
+  "external_asset_datasets_used": [],
+  "original_apk_code_or_art_included": false,
+  "computer_use_used": false
+}

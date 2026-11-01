@@ -1,129 +1,95 @@
-# Airstrike: Rocket Defense
+# Airstrike / SKYBREACH
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+基于 Unity 6.3 的侧视 2.5D 空袭生存原型：控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，并躲避轰炸。
 
-Airstrike是一款基于Godot引擎开发的2D火箭防御游戏，玩家需要控制角色发射火箭，摧毁来袭的敌机，保护地面安全。
+当前版本为可试玩的 v0.1。主分支已由 Godot 工程切换为 Unity；旧版本保留在[历史提交](https://github.com/Yixuan-Tao/Airstrike/tree/8a4cc94ae6e95015b24b92bd49b9a5f1b46c8091)中。
 
-## 游戏特色
+![运行场景预览](Docs/Images/skybreach.png)
 
-- **经典防御玩法**：控制角色左右移动，发射火箭摧毁敌机
-- **多样化敌人**：四种不同类型的敌机（蓝色、绿色、红色、黄色）和友好飞机
-- **波次系统**：20个递增难度的波次，每波敌人数量和类型不同
-- **道具系统**：跳跃靴、连锁火箭、穿透能力等多种道具
-- **地形破坏**：真实的地形破坏效果，炸弹会对地形造成损伤
-- **地图编辑器**：内置地图编辑器，可创建自定义地图
-- **视觉效果**：动态背景、粒子效果和流畅的动画
+预览来自真实运行场景；为展示画面调整过敌机位置和坑洞，不是人工实玩录像。人物、飞机和界面使用自制简模及占位美术。
 
-## 游戏玩法
+## 已实现
 
-### 基本操作
-- **左右移动**：A/左箭头键 和 D/右箭头键
-- **跳跃**：W/上箭头键 或 空格键
-- **发射火箭**：鼠标点击目标位置
+- 左右移动、二段跳、鼠标瞄准和火箭射击。
+- 一枚火箭同时在空中，命中或消失后可再次发射。
+- 敌机循环飞行、投弹、爆炸伤害及击杀计分。
+- 受距离限制的挖掘，爆炸坑洞，以及实时更新的地形碰撞。
+- 波次推进、三条生命、复活保护、暂停、结算和重新开始。
+- 第 4 波开始可能出现装甲飞机。
+- 代码合成音效与本机最高完成波数记录。
 
-### 游戏目标
-- 摧毁尽可能多的敌机，获得高分
-- 保护地面，避免被敌机投下的炸弹击中
-- 完成所有20波敌人的攻击
+本原型依据玩法规则独立实现，没有导入原 APK 的代码、图像或音频。补给升级、特殊敌机、坠机残骸、完整设置及最终美术尚未实现。地形目前是 0.5 单位网格的三维剖面，边缘呈阶梯状。
 
-### 道具说明
-- **跳跃靴**：增加角色的跳跃能力
-- **连锁火箭**：每次点击发射多枚火箭
-- **穿透能力**：火箭可以穿透多个敌人
-- **EMP**：暂时瘫痪所有敌机
-- **POW**：增加得分
+## 在 Unity 中试玩
 
-## 技术实现
+1. 安装并激活适用许可的 Unity **6000.3.27f2**。
+2. 用 Unity Hub 打开仓库根目录，等待依赖导入。
+3. 打开 `Assets/Scenes/Prototype.unity`，进入 Play Mode。
 
-- **游戏引擎**：Godot 4.2
-- **语言**：GDScript
-- **渲染**：GL Compatibility 模式
-- **分辨率**：1280x720
+| 操作 | 按键 |
+|---|---|
+| 移动 | A / D 或左右方向键 |
+| 跳跃、空中再跳 | 空格、W 或上方向键 |
+| 瞄准 | 鼠标 |
+| 火箭射击 | 鼠标左键，可按住 |
+| 附近挖掘 | 鼠标右键，可按住 |
+| 暂停 / 继续 | Esc |
+| 重新开始 | R |
+| 退出独立程序 | 暂停或结算时按 Q，或关闭窗口 |
 
-## 项目结构
+清空本波全部敌机和炸弹后进入下一波。飞出画面的敌机会再次飞越战场，需要击落才能清空威胁。
 
-```
-rocket_defense/
-├── assets/              # 游戏资源
-│   ├── sprites/         # 精灵图片
-│   └── wave_config.csv  # 波次配置文件
-├── autoload/            # 自动加载脚本
-│   └── game_manager.gd  # 游戏状态管理器
-├── scenes/              # 游戏场景
-│   ├── destructible_terrain.tscn  # 可破坏地形
-│   ├── hud.tscn         # 游戏界面
-│   ├── main.tscn        # 主游戏场景
-│   ├── map_editor.tscn  # 地图编辑器
-│   ├── map_select.tscn  # 地图选择
-│   └── player.tscn      # 玩家角色
-├── scripts/             # 游戏脚本
-│   ├── bomb.gd          # 炸弹逻辑
-│   ├── crosshair.gd     # 准星逻辑
-│   ├── destructible_terrain.gd  # 地形破坏逻辑
-│   ├── enemy_soldier.gd # 敌人士兵逻辑
-│   ├── hud.gd           # 界面逻辑
-│   ├── main.gd          # 主游戏逻辑
-│   ├── map_editor.gd    # 地图编辑器逻辑
-│   ├── map_select.gd    # 地图选择逻辑
-│   ├── pickup.gd        # 道具逻辑
-│   ├── plane_base.gd    # 飞机基础逻辑
-│   ├── player.gd        # 玩家逻辑
-│   ├── poison_cloud.gd  # 毒云逻辑
-│   ├── rocket.gd        # 火箭逻辑
-│   └── shrapnel.gd      # 弹片逻辑
-├── icon.svg             # 游戏图标
-└── project.godot        # 项目配置文件
+## Windows 构建
+
+仓库保存源工程，编译产物与 Unity 缓存不入库。构建完成后可双击根目录的 `试玩.cmd`；复制给其他电脑时需要整个 `Builds/Skybreach` 文件夹。
+
+环境：Universal RP **17.3.0**、Pipeline **0.9.1-exp.1**，目标 Windows x64 / Mono。开发时使用的 Unity CLI 版本为 **1.0.0-beta.15**。
+
+已安装官方 Unity CLI 后，在仓库根目录运行 PowerShell：
+
+```powershell
+$cli = 'unity'
+$projectPath = (Get-Location).Path
+New-Item -ItemType Directory -Force -Path 'Logs' | Out-Null
+$editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log') + '" -job-worker-count 4'
+& $cli open $projectPath --editor-version 6000.3.27f2 --batchmode --until-ready --timeout 60 --args $editorArgs --format json
+& $cli command build run --project-path $projectPath --format json -- --target StandaloneWindows64 --outputPath Builds/Skybreach/Skybreach.exe --scenes '["Assets/Scenes/Prototype.unity"]' --confirm true
+& $cli command build status --project-path $projectPath --format json
 ```
 
-## 如何运行
+构建是异步操作，等待状态为 `completed` 且结果为 `Succeeded` 后运行：
 
-1. 确保你已经安装了 [Godot Engine 4.2](https://godotengine.org/download)
-2. 克隆或下载本项目到本地
-3. 启动Godot引擎，点击"Import"按钮导入项目
-4. 选择项目文件夹中的 `project.godot` 文件
-5. 点击"Run"按钮开始游戏
-
-## 自定义地图
-
-1. 在游戏主菜单中选择"Custom Map"
-2. 使用地图编辑器创建自定义地形
-3. 保存地图后开始游戏，使用你创建的地图进行游戏
-
-## 波次配置
-
-游戏的波次配置存储在 `assets/wave_config.csv` 文件中，你可以编辑此文件来自定义每波敌人的数量和类型。
-
-配置格式：
-```csv
-Wave,Blue,Green,Red,Yellow,Friendly
-1,2,0,0,0,1
-2,2,1,0,0,1
-...
+```powershell
+& './AgentScripts/VerifyStandalone.ps1'
 ```
 
-## 开发说明
+验收通过游戏内部控制输入操作真实物理与战斗逻辑，隐藏运行独立程序，不发送系统键鼠事件。后台模式忽略用户在其他软件中的键鼠操作。
 
-### 主要脚本说明
-- `game_manager.gd`：全局游戏状态管理，包括分数、生命值、波次等
-- `main.gd`：主游戏场景逻辑，负责敌人生成、碰撞检测等
-- `player.gd`：玩家角色控制和火箭发射逻辑
-- `plane_base.gd`：飞机基础逻辑，包括移动、投弹等
-- `destructible_terrain.gd`：可破坏地形系统
+## 验证记录
 
-### 扩展游戏
+2026-11-01 在 Windows 上的最终构建成功，零错误、零警告；独立程序退出码为 0，23 条自动检查通过。
 
-- **添加新敌人类型**：在 `plane_base.gd` 中添加新的飞机类型
-- **添加新道具**：在 `pickup.gd` 中添加新的道具类型
-- **修改游戏平衡**：调整 `game_manager.gd` 中的波次配置和难度参数
+记录见 [验收摘要](Docs/Validation/README.md)、[独立运行原始结果](Docs/Validation/standalone.json)和[构建汇总](Docs/Validation/acceptance.json)。这些是本地执行记录，不是 GitHub Actions 验证。
 
-## 贡献
+检查覆盖移动、二段跳及次数限制、落地恢复、敌机飞行投弹、挖掘、火箭命中与数量限制、爆炸伤害、击杀计分、波次推进、暂停继续、死亡复活、结算和重开。射击检查将目标固定位置以便重复，正常飞行与投弹另行检查。
 
-欢迎提交问题和拉取请求，帮助改进这个游戏！
+独立验收使用无图形、无声音模式；键鼠手感、声音和长时间图形性能仍需人工试玩。后台帧计数不是性能基准。
 
-## 许可证
+## 工程结构
 
-本项目采用 MIT 许可证，详情请参阅 [LICENSE](LICENSE) 文件。
+- `Assets/Scenes/Prototype.unity`：游戏入口；运行时生成战场。
+- `Assets/Scripts/`：操作、战斗、敌机、地形、界面及可选验收驱动。
+- `Assets/Art/Prototype/`：引用到构建中的材质。
+- `AgentScripts/BuildPrototype.cs`：通过 Unity API 重建入口和材质。
+- `AgentScripts/CapturePrototype.cs`、`ArrangePreview.cs`：后台离屏预览。
+- `AgentScripts/VerifyStandalone.ps1`：独立程序自动验收。
+- `Packages/`、`ProjectSettings/`：锁定依赖与项目设置。
+- `Bootstrap.unity` 与对应脚本：早期环境核验，非游戏入口。
 
----
+通过 CLI 重启编辑器后，先明确打开 `Assets/Scenes/Prototype.unity`，再开始 Play Mode。持久脚本修改后先确认编译完成；场景与材质通过 Unity API 保存。
 
-**享受游戏！** 🚀
+## 素材与许可
+
+[NVIDIA SimReady](https://huggingface.co/datasets/nvidia/simready-assets) 和 [Scenario 3D Collection](https://huggingface.co/datasets/scenario-labs/3d-collection) 列为后续素材候选，本版未导入其模型。来源与选用记录见 [ASSET_SOURCES.md](ASSET_SOURCES.md)。
+
+沿用仓库原有 [MIT License](LICENSE)。Unity 及包依赖遵循各自随附的许可。
