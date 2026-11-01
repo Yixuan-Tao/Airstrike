@@ -3,8 +3,14 @@ using System.Collections.Generic;
 
 namespace Airstrike
 {
-    public enum AircraftRole { Bomber, FastBomber, Helicopter }
-    public enum SupplyKind { RocketSlot, Piercing }
+    public enum AircraftRole { Bomber, FastBomber, Helicopter, SupplyTransport }
+    public enum SupplyKind { RocketSlot, Piercing, Emp, JumpBoots }
+
+    public static class SupplyRules
+    {
+        public static string Name(SupplyKind kind) => kind==SupplyKind.RocketSlot?"ROCKET SLOT":
+            kind==SupplyKind.Piercing?"PIERCING":kind==SupplyKind.Emp?"EMP":"JUMP BOOTS";
+    }
 
     public readonly struct AircraftSpawn
     {
@@ -47,10 +53,11 @@ namespace Airstrike
             return new WaveDefinition("ENDLESS SKY",Math.Max(1.15f,1.8f-(wave-6)*0.06f),spawns);
         }
 
-        public static SupplyKind? Reward(int completedWave)
+        public static SupplyKind? Cargo(int wave)
         {
-            if(completedWave<2 || completedWave%2!=0) return null;
-            return completedWave%4==0?SupplyKind.Piercing:SupplyKind.RocketSlot;
+            if(wave<2 || wave%2!=0) return null;
+            var cycle=(wave/2-1)%4;
+            return cycle==0?SupplyKind.RocketSlot:cycle==1?SupplyKind.Piercing:cycle==2?SupplyKind.JumpBoots:SupplyKind.Emp;
         }
     }
 }

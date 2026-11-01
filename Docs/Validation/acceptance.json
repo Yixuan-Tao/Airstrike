@@ -1,23 +1,23 @@
 {
-  "checked_at": "2026-11-01T16:22:30.4693649+08:00",
-  "prototype": "SKYBREACH v0.4.1",
+  "checked_at": "2026-11-01T16:42:33.4956107+08:00",
+  "prototype": "SKYBREACH v0.5.0",
   "entry_scene": "Assets/Scenes/Prototype.unity",
   "unity_version": "6000.3.27f2",
   "urp_version": "17.3.0",
   "build": {
     "status": "completed",
     "result": "Succeeded",
-    "buildId": "build_1ed9a342863e",
+    "buildId": "build_aa0e409bcf3d",
     "platform": "StandaloneWindows64",
-    "totalSizeBytes": 103806338,
-    "buildTimeMs": 14352,
+    "totalSizeBytes": 103827202,
+    "buildTimeMs": 10253,
     "totalErrors": 0,
     "totalWarnings": 0
   },
   "build_output": "Builds/Skybreach/Skybreach.exe",
-  "gameplay_assembly_sha256": "A0BE1BCD84EE6394D0DBDECFD86BC5593EEB2772BCF8E367F506838F533BC768",
+  "gameplay_assembly_sha256": "FD5E8F33EBFF83F68EE4EC4C47810E321E76B2D366E0FFA939269F79B78746B2",
   "standalone_exit_code": 0,
-  "standalone_checks": 72,
+  "standalone_checks": 109,
   "standalone_report": "Docs/Validation/standalone.json",
   "frame_progress": {
     "state": "met",
@@ -25,9 +25,9 @@
     "timedOut": false,
     "member": "UnityEngine.Time.frameCount",
     "op": "changed",
-    "value": 2243,
-    "initialValue": 2230,
-    "elapsedMs": 108,
+    "value": 84,
+    "initialValue": 71,
+    "elapsedMs": 107,
     "framesObserved": 2
   },
   "preview": "Docs/Images/skybreach.png",
@@ -35,11 +35,12 @@
   "preview_visually_reviewed": true,
   "visual_comparison": "Docs/ART_DIRECTION.md",
   "windows_archive": {
-    "name": "Skybreach-v0.4.1-Windows.zip",
-    "bytes": 39867987,
-    "sha256": "58FFB8C4B8D2BDD5CB1E682E74CE9379857D573D0C034E200A77064FEECA49A0",
-    "zip_entries": 202,
-    "required_files_verified": true
+    "name": "Skybreach-v0.5.0-Windows.zip",
+    "bytes": 39888645,
+    "sha256": "6F7FC635D25B3C7C835F9963E8F587026B5BF5177A8BD4BDA4D4E33EBE84E17C",
+    "zip_entries": 206,
+    "required_files_verified": true,
+    "tested_assembly_verified": true
   },
   "verification_limits": [
     "Internal control inputs; no OS keyboard/mouse automation.",
@@ -60,5 +61,15 @@
     "retained_after_108_impacts_before": 0.26669803261756897,
     "retained_after_108_impacts_after": 0.7986829876899719,
     "scope": "Fixed impact fixtures, not an actual six-wave playthrough."
+  },
+  "supply_and_rescue": {
+    "authored_transports": 3,
+    "rocket_cargo_drops": 1,
+    "emp_fixture_targets": 2,
+    "rescue_life_gain": 1,
+    "maximum_lives": 6,
+    "boots_survive_respawn": true,
+    "optional_resources_expire": true,
+    "scope": "Controlled fixtures; pilot probability forced only for dedicated checks; expiry uses accelerated simulation time."
   }
 }

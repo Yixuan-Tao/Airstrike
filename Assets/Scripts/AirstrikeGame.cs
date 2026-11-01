@@ -8,7 +8,8 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
-        public const string Version = "0.4.1";
+        public const string Version = "0.5.0";
+        public const int MaximumLives = 6;
         public Material[] Palette;
         public Camera MainCamera;
         public SoldierController Player { get; private set; }
@@ -19,6 +20,7 @@ namespace Airstrike
         public CombatInput Controls { get; private set; }
         public readonly List<EnemyAircraft> Aircraft = new List<EnemyAircraft>();
         public readonly List<SupplyCrate> Supplies = new List<SupplyCrate>();
+        public readonly List<RescuePilot> Pilots = new List<RescuePilot>();
         public bool Paused { get; private set; }
         public bool GameOver { get; private set; }
         public bool Playing => !Paused && !GameOver;
@@ -30,6 +32,10 @@ namespace Airstrike
         public int EnemyRocketsFired, HelicopterWarnings, PiercedTargets, SuppliesDropped, SuppliesCollected;
         public int RocketCapacity { get; private set; } = 1;
         public bool PiercingEnabled { get; private set; }
+        public bool MultiJumpEnabled { get; private set; }
+        [Range(0,1)] public float PilotDropChance = 0.25f;
+        public int TransportsSpawned, TransportsShotDown, TransportsEscaped, EmpActivations, EmpKills, PilotsSpawned, PilotsRescued;
+        public int HostileAircraftCount { get { var count=0; foreach(var aircraft in Aircraft) if(aircraft!=null && !aircraft.IsSupplyTransport) count++; return count; } }
         public int CompletedWaves { get; private set; }
         public string SupplyMessage { get; private set; }
         public float SupplyFeedbackUntil { get; private set; }
@@ -100,18 +106,22 @@ namespace Airstrike
                 var spec=currentPlan.Spawns[spawnCursor++];
                 var height=spec.Role==AircraftRole.Helicopter?Random.Range(8.5f,10.5f):Random.Range(9.2f,13.8f);
                 SpawnAircraft(new Vector2(direction>0?-29:29,height),direction,spec.Role,spec.Armored);
+                if(spawnCursor==1)
+                {
+                    var cargo=WavePlan.Cargo(Wave);
+                    if(cargo.HasValue) SpawnTransport(cargo.Value,new Vector2(direction>0?30:-30,8.5f),-direction);
+                }
                 EnemiesPending--;
                 nextSpawn = Time.time + (SpawnInterval>0?SpawnInterval:currentPlan.SpawnSeconds);
             }
             Aircraft.RemoveAll(a=>a==null);
             Supplies.RemoveAll(s=>s==null);
-            if (EnemiesPending == 0 && Aircraft.Count == 0 && HostileProjectilesAlive == 0)
+            Pilots.RemoveAll(p=>p==null);
+            if (EnemiesPending == 0 && HostileAircraftCount == 0 && HostileProjectilesAlive == 0)
             {
                 if (nextWave < 0)
                 {
                     CompletedWaves=Wave;
-                    var reward=WavePlan.Reward(Wave);
-                    if(reward.HasValue) SpawnSupply(reward.Value,new Vector2(Mathf.Clamp(Player.Body.position.x+2,-29,29),Ground.SurfaceAt(Player.Body.position.x)+8));
                     nextWave = Time.time + WaveIntermissionSeconds;
                 }
                 if (Time.time >= nextWave) { Wave++; BeginWave(); }
@@ -162,6 +172,57 @@ namespace Airstrike
             aircraft.Initialize(this,direction,Wave,role,armored);
             Aircraft.Add(aircraft);
             return aircraft;
+        }
+
+        public EnemyAircraft SpawnTransport(SupplyKind cargo,Vector2 position,int direction)
+        {
+            // Optional targets are bounded even when the player ignores them.
+            foreach(var old in Aircraft.ToArray()) if(old!=null && old.IsSupplyTransport) old.Escape();
+            var transport=SpawnAircraft(position,direction,AircraftRole.SupplyTransport);
+            transport.SetCargo(cargo); TransportsSpawned++;
+            Announce("CARGO: "+SupplyRules.Name(cargo)+"  /  SHOOT IT DOWN");
+            return transport;
+        }
+
+        public bool CanReachPickup(Vector2 position)
+        {
+            return Player.Health>0 && Vector2.Distance(position,Player.Body.position)<1.05f
+                && !Physics.Linecast(Player.Body.position,position,1 << GameArt.TerrainLayer,QueryTriggerInteraction.Ignore);
+        }
+
+        public RescuePilot SpawnPilot(Vector2 position)
+        {
+            Pilots.RemoveAll(p=>p==null);
+            if(Pilots.Count>=3) Pilots[0].Expire();
+            var go=new GameObject("Wounded pilot"); go.transform.position=position;
+            var pilot=go.AddComponent<RescuePilot>(); pilot.Initialize(this);
+            Pilots.Add(pilot); PilotsSpawned++;
+            Announce("WOUNDED PILOT  /  REACH FOR AN EXTRA LIFE");
+            return pilot;
+        }
+
+        public void Rescue(RescuePilot pilot)
+        {
+            if(!Playing || Player.Health<=0 || !Pilots.Remove(pilot)) return;
+            PilotsRescued++;
+            if(Lives<MaximumLives) { Lives++; Announce("PILOT CAPTURED  /  EXTRA LIFE"); }
+            else { Score+=150; Announce("LIVES FULL  /  RESCUE +150 SCORE"); }
+            PlaySound(2);
+        }
+
+        private void Announce(string message) { SupplyMessage=message; SupplyFeedbackUntil=Time.time+3; }
+
+        private void ActivateEmp()
+        {
+            EmpActivations++;
+            foreach(var aircraft in Aircraft.ToArray())
+            {
+                if(aircraft==null || aircraft.IsSupplyTransport) continue;
+                var viewport=MainCamera.WorldToViewportPoint(aircraft.transform.position);
+                if(viewport.z<=0 || viewport.x<0 || viewport.x>1 || viewport.y<0 || viewport.y>1) continue;
+                aircraft.Damage(10000,false); EmpKills++;
+            }
+            Effects.Pulse(Player.Body.position);
         }
 
         public void LaunchRocket(Vector2 origin, Vector2 direction)
@@ -225,6 +286,10 @@ namespace Airstrike
             { RocketCapacity++; SupplyMessage="ROCKET SLOTS  "+RocketCapacity; }
             else if(crate.Kind==SupplyKind.Piercing && !PiercingEnabled)
             { PiercingEnabled=true; SupplyMessage="PIERCING ROCKETS ONLINE"; }
+            else if(crate.Kind==SupplyKind.JumpBoots && !MultiJumpEnabled)
+            { MultiJumpEnabled=true; Player.GrantMultiJump(); SupplyMessage="JUMP BOOTS  /  AIR JUMPS UNLOCKED"; }
+            else if(crate.Kind==SupplyKind.Emp)
+            { var before=EmpKills; ActivateEmp(); SupplyMessage="EMP DISCHARGED  /  "+(EmpKills-before)+" TARGETS"; }
             else { Score+=150; SupplyMessage="UPGRADE ACTIVE  /  +150 SCORE"; }
             SupplyFeedbackUntil=Time.time+3;
             PlaySound(2);
@@ -265,6 +330,10 @@ namespace Airstrike
                         Player.Body.AddForce(new Vector3((Player.transform.position.x-position.x)*2,3,0)*LastBlastExposure,ForceMode.Impulse);
                 }
             }
+            if(!rocket)
+                foreach(var pilot in Pilots.ToArray())
+                    if(pilot!=null && Vector2.Distance(pilot.transform.position,position)<3.3f
+                        && Ground.BlastTransmission(position,pilot.transform.position)>0.2f) pilot.Expire();
             Ground.CarveBlast(position,rocket);
             Flash(position,rocket?2.0f:2.8f);
             CameraRig.Shake(rocket?0.08f:0.16f);
@@ -279,10 +348,16 @@ namespace Airstrike
             Effects.Emit(position,radius);
         }
 
-        public void AircraftDestroyed(EnemyAircraft aircraft)
+        public void AircraftDestroyed(EnemyAircraft aircraft,bool releasePilot)
         {
             Aircraft.Remove(aircraft);
-            Kills++; Score += aircraft.ScoreValue*Wave;
+            if(aircraft.IsSupplyTransport)
+            { TransportsShotDown++; SpawnSupply(aircraft.Cargo,aircraft.transform.position); }
+            else
+            {
+                Kills++; Score += aircraft.ScoreValue*Wave;
+                if(releasePilot && Random.value<PilotDropChance) SpawnPilot(aircraft.transform.position);
+            }
             Flash(aircraft.transform.position,2.5f);
             PlaySound(1);
             CameraRig.Shake(0.12f);

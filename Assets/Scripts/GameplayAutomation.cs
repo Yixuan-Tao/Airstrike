@@ -40,6 +40,8 @@ namespace Airstrike
             public List<float> legacyTerrainRetention = new List<float>();
             public List<float> shallowTerrainRetention = new List<float>();
             public List<string> waveObservations = new List<string>();
+            public int authoredTransports, transportRocketDrops, empTargetsCleared, rescueLifeGain, maximumRescueLives;
+            public bool bootsSurviveRespawn, optionalResourcesExpired;
         }
         private static GameplayAutomation active;
         private AirstrikeGame game;
@@ -51,7 +53,7 @@ namespace Airstrike
 
         public static void AttachIfRequested(AirstrikeGame owner)
         {
-            if(active!=null) { active.game=owner; owner.OverrideControls=true; return; }
+            if(active!=null) { active.game=owner; owner.OverrideControls=true; owner.PilotDropChance=0; return; }
             var args=Environment.GetCommandLineArgs();
             for(var i=0;i+1<args.Length;i++)
                 if(args[i]=="--gameplay-smoke") { Begin(owner,args[i+1]); return; }
@@ -64,6 +66,7 @@ namespace Airstrike
             active=driver; driver.game=owner; driver.reportPath=Path.GetFullPath(path);
             UnityEngine.Random.InitState(50702);
             owner.OverrideControls=true;
+            owner.PilotDropChance=0; // Random rescue drops are tested separately with a guaranteed fixture.
             DontDestroyOnLoad(driver.gameObject);
             driver.started=Time.realtimeSinceStartup;
             Application.logMessageReceived+=driver.OnLog;
@@ -196,6 +199,7 @@ namespace Airstrike
             yield return CombatFeelChecks.Run(game,report,Check);
             yield return BattleVarietyChecks.Run(game,report,Check,AllowLiveFixture);
             yield return PresentationChecks.Run(game,report,Check);
+            yield return SupplyCycleChecks.Run(game,report,Check,AllowLiveFixture);
 
             game.TestControls=new CombatInput { pause=true };
             yield return null;
@@ -208,7 +212,7 @@ namespace Airstrike
             game.TestControls=new CombatInput();
             Check(!game.Paused && Time.timeScale==1,"Resume restores simulation time.");
 
-            for(var life=0;life<3 && !game.GameOver;life++)
+            for(var life=0;life<AirstrikeGame.MaximumLives && !game.GameOver;life++)
             {
                 var lives=game.Lives;
                 game.Player.ApplyDamage(1000,true);
@@ -226,7 +230,7 @@ namespace Airstrike
                 game.TestControls=new CombatInput { restart=true };
                 yield return null;
                 yield return null;
-                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0 && game.RocketCapacity==1 && !game.PiercingEnabled && game.Supplies.Count==0,
+                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0 && game.RocketCapacity==1 && !game.PiercingEnabled && !game.MultiJumpEnabled && game.Supplies.Count==0 && game.Pilots.Count==0,
                     "Restart resets the battlefield, upgrades and supplies, pass "+(restart+1)+".");
                 report.restarts++;
             }

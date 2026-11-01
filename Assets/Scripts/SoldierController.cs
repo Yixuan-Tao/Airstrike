@@ -28,6 +28,7 @@ namespace Airstrike
         private PhysicsMaterial friction;
         private float protectedUntil, nextShot, nextDig, groundLock;
         public const float CoyoteSeconds = 0.12f, JumpBufferSeconds = 0.14f;
+        public const float MaximumAltitude = 14;
         private float jumpBufferedUntil = -1, lastGroundedAt = -100;
         private bool waitingForLanding;
         private float move;
@@ -94,7 +95,7 @@ namespace Airstrike
                 && floor.normal.y > 0.55f;
             if (Grounded && Body.linearVelocity.y < 0.5f)
             {
-                JumpsLeft = 2; lastGroundedAt = Time.time;
+                JumpsLeft = game.MultiJumpEnabled?int.MaxValue:2; lastGroundedAt = Time.time;
                 // Keep small collider-seam hops from consuming the ground jump.
                 // Only descend onto the floor actually detected beneath the capsule.
                 var floorY = floor.point.y + 0.835f;
@@ -105,7 +106,7 @@ namespace Airstrike
                     Body.position = groundedPosition;
                 }
             }
-            else if (!Grounded && JumpsLeft == 2 && Time.time - lastGroundedAt > CoyoteSeconds) JumpsLeft = 1;
+            else if (!game.MultiJumpEnabled && !Grounded && JumpsLeft == 2 && Time.time - lastGroundedAt > CoyoteSeconds) JumpsLeft = 1;
             var velocity = Body.linearVelocity;
             velocity.x = Mathf.MoveTowards(velocity.x, move * 7.5f, (Grounded ? 65 : 32) * Time.fixedDeltaTime);
             if (Time.time <= jumpBufferedUntil && JumpsLeft > 0)
@@ -121,6 +122,12 @@ namespace Airstrike
             if (velocity.y < 0) velocity.y -= 10 * Time.fixedDeltaTime;
             Body.linearVelocity = velocity;
             var position = Body.position;
+            if(position.y>MaximumAltitude)
+            {
+                position.y=MaximumAltitude;
+                var limited=Body.linearVelocity; limited.y=Mathf.Min(0,limited.y);
+                Body.linearVelocity=limited; Body.position=position;
+            }
             if (position.x < -30.8f || position.x > 30.8f)
             {
                 position.x = Mathf.Clamp(position.x,-30.8f,30.8f); Body.position = position;
@@ -162,13 +169,15 @@ namespace Airstrike
 
         public void Respawn()
         {
-            Health = 100; JumpsLeft = 2; jumpBufferedUntil = -1; Grounded = false;
+            Health = 100; JumpsLeft = game.MultiJumpEnabled?int.MaxValue:2; jumpBufferedUntil = -1; Grounded = false;
             waitingForLanding = false; lastGroundedAt = Time.time; groundLock = 0;
             Body.position = new Vector3(-6,game.Ground.SurfaceAt(-6)+0.9f,0);
             Body.linearVelocity = Vector3.zero;
             protectedUntil = Time.time + 2.2f;
 
         }
+
+        public void GrantMultiJump() { JumpsLeft=int.MaxValue; }
 
         private void OnDestroy() { if (friction != null) Destroy(friction); }
     }

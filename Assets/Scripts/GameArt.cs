@@ -59,5 +59,33 @@ namespace Airstrike
             Shape("Rotor hub",PrimitiveType.Cylinder,root,new Vector3(0,0.58f,0),new Vector3(0.16f,0.18f,0.16f),trim);
             return rotor;
         }
+
+        public static void SupplyIcon(Transform root,SupplyKind kind,Material mark)
+        {
+            if(kind==SupplyKind.Emp)
+            {
+                var ring=new GameObject("EMP coil").AddComponent<LineRenderer>();
+                ring.transform.SetParent(root,false); ring.useWorldSpace=false; ring.loop=true;
+                ring.sharedMaterial=mark; ring.widthMultiplier=0.045f; ring.positionCount=20;
+                for(var i=0;i<20;i++) { var a=i*Mathf.PI*2/20; ring.SetPosition(i,new Vector3(Mathf.Cos(a)*0.22f,Mathf.Sin(a)*0.22f,0)); }
+                Shape("EMP core",PrimitiveType.Cube,root,Vector3.zero,new Vector3(0.08f,0.32f,0.04f),mark);
+            }
+            else if(kind==SupplyKind.JumpBoots)
+            {
+                for(var i=-1;i<=1;i+=2)
+                {
+                    Shape("Boot shaft",PrimitiveType.Cube,root,new Vector3(i*0.12f,0.04f,0),new Vector3(0.09f,0.3f,0.04f),mark);
+                    Shape("Boot sole",PrimitiveType.Cube,root,new Vector3(i*0.12f+0.03f,-0.13f,0),new Vector3(0.15f,0.08f,0.04f),mark);
+                }
+            }
+            else
+            {
+                var count=kind==SupplyKind.RocketSlot?3:1;
+                for(var i=0;i<count;i++)
+                    Shape("Rocket mark",PrimitiveType.Cube,root,new Vector3((i-(count-1)*0.5f)*0.16f,0,0),new Vector3(0.07f,0.4f,0.04f),mark);
+                if(kind==SupplyKind.Piercing)
+                    Shape("Piercing tip",PrimitiveType.Cube,root,new Vector3(0,0.16f,0),new Vector3(0.17f,0.17f,0.04f),mark).transform.localRotation=Quaternion.Euler(0,0,45);
+            }
+        }
     }
 }

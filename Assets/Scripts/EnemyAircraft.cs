@@ -10,12 +10,14 @@ namespace Airstrike
         public int SpawnWave { get; private set; }
         public int Health { get; private set; }
         public bool Armored { get; private set; }
+        public bool IsSupplyTransport => Role==AircraftRole.SupplyTransport;
+        public SupplyKind Cargo { get; private set; }
         public bool IsTelegraphing => warningUntil > 0;
         public Vector2 LockedAim { get; private set; }
         public int ScoreValue => Role==AircraftRole.Helicopter?175:Role==AircraftRole.FastBomber?125:Armored?150:100;
         private AirstrikeGame game;
         private int direction, burstLeft;
-        private float altitude, weaponAt, phase, warningUntil, nextBurst;
+        private float altitude, weaponAt, phase, warningUntil, nextBurst, age;
         private bool dead, tintActive;
         private Renderer[] modelRenderers;
         private MaterialPropertyBlock hitProperties;
@@ -28,7 +30,7 @@ namespace Airstrike
             game=owner; direction=travelDirection; SpawnWave=wave; Role=role; Armored=armored;
             altitude=transform.position.y; phase=Random.Range(0,6.28f);
             Health=armored?180:role==AircraftRole.Helicopter?130:role==AircraftRole.FastBomber?80:100;
-            Speed=role==AircraftRole.FastBomber?8.2f+Mathf.Min(wave,10)*0.35f:
+            Speed=IsSupplyTransport?5.8f:role==AircraftRole.FastBomber?8.2f+Mathf.Min(wave,10)*0.35f:
                 role==AircraftRole.Helicopter?3.4f+Mathf.Min(wave,8)*0.1f:4.2f+Mathf.Min(wave,10)*0.45f;
             weaponAt=Time.time+(role==AircraftRole.FastBomber?0.35f:role==AircraftRole.Helicopter?0.7f:1.2f);
             gameObject.layer=GameArt.EnemyLayer;
@@ -38,6 +40,11 @@ namespace Airstrike
             if(direction<0) model.localRotation=Quaternion.Euler(0,180,0);
             if(role==AircraftRole.Helicopter) rotor=GameArt.Helicopter(model,game.Palette[4],game.Palette[3],game.Palette[7]);
             else if(role==AircraftRole.FastBomber) GameArt.FastJet(model,game.Palette[5],game.Palette[3],game.Palette[7]);
+            else if(IsSupplyTransport)
+            {
+                GameArt.Aircraft(model,game.Palette[18],game.Palette[3],game.Palette[7]);
+                GameArt.Shape("Cargo hold",PrimitiveType.Cube,model,new Vector3(-0.2f,-0.28f,0),new Vector3(1.3f,0.55f,0.9f),game.Palette[3]);
+            }
             else GameArt.Aircraft(model,game.Palette[4],game.Palette[5],game.Palette[7]);
             if(armored) GameArt.Shape("Armor band",PrimitiveType.Cube,model,Vector3.zero,new Vector3(0.35f,0.65f,0.7f),game.Palette[3]);
             modelRenderers=model.GetComponentsInChildren<Renderer>(); hitProperties=new MaterialPropertyBlock();
@@ -54,6 +61,8 @@ namespace Airstrike
         private void Update()
         {
             if(dead || game==null || !game.Playing) return;
+            age+=Time.deltaTime;
+            if(IsSupplyTransport && age>14) { Escape(); return; }
             if(tintActive && Time.time>=hitUntil)
             {
                 foreach(var renderer in modelRenderers) renderer.SetPropertyBlock(null);
@@ -68,11 +77,13 @@ namespace Airstrike
             else
             {
                 p.x+=direction*Speed*Time.deltaTime;
+                if(IsSupplyTransport && Mathf.Abs(p.x)>36) { Escape(); return; }
                 if(p.x>36) p.x=-36;
                 if(p.x<-36) p.x=36;
             }
             if(Speed>0) p.y=altitude+Mathf.Sin(Time.time*0.85f+phase)*0.32f;
             transform.position=p;
+            if(IsSupplyTransport) return;
             if(!AttacksEnabled || game.Player.Health<=0)
             {
                 warningUntil=0; burstLeft=0;
@@ -124,7 +135,23 @@ namespace Airstrike
             weaponAt=Time.time+Mathf.Max(2.4f,3.5f-game.Wave*0.08f);
         }
 
-        public void Damage(int amount)
+        public void SetCargo(SupplyKind kind)
+        {
+            Cargo=kind;
+            var marker=new GameObject("Cargo marking").transform; marker.SetParent(model,false);
+            marker.localPosition=new Vector3(0,-0.2f,-0.6f); marker.localScale=Vector3.one*1.4f;
+            GameArt.SupplyIcon(marker,kind,game.Palette[7]);
+        }
+
+        public void Escape()
+        {
+            if(dead) return;
+            dead=true; game.Aircraft.Remove(this);
+            if(IsSupplyTransport) game.TransportsEscaped++;
+            GetComponent<Collider>().enabled=false; Destroy(gameObject);
+        }
+
+        public void Damage(int amount,bool releasePilot=true)
         {
             if(dead || amount<=0) return;
             game.NotifyAircraftHit(); hitUntil=Time.time+0.12f; tintActive=true;
@@ -135,7 +162,7 @@ namespace Airstrike
             dead=true; warningUntil=0;
             if(warningLine!=null) warningLine.enabled=false;
             GetComponent<Collider>().enabled=false;
-            game.AircraftDestroyed(this); Destroy(gameObject);
+            game.AircraftDestroyed(this,releasePilot); Destroy(gameObject);
         }
     }
 }

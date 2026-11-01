@@ -31,7 +31,7 @@ namespace Airstrike
             var top=Panel("Command bar",root,new Vector2(0.5f,1),new Vector2(0,-54),new Vector2(1920,108),ink);
             Panel("Accent",top,new Vector2(0,0.5f),new Vector2(15,0),new Vector2(5,60),amber);
             Label(top,new Vector2(0,0.5f),new Vector2(220,10),new Vector2(360,45),"S K Y B R E A C H",31,cream);
-            Label(top,new Vector2(0,0.5f),new Vector2(220,-24),new Vector2(360,24),"FIELD TEST 04   /   DUSK FRONTIER",15,new Color(0.55f,0.67f,0.7f));
+            Label(top,new Vector2(0,0.5f),new Vector2(220,-24),new Vector2(360,24),"FIELD TEST 05   /   SALVAGE RUN",15,new Color(0.55f,0.67f,0.7f));
             wave=Label(top,new Vector2(0.5f,0.5f),new Vector2(-100,5),new Vector2(220,45),"WAVE 01",29,cream);
             briefing=Label(top,new Vector2(0.5f,0.5f),new Vector2(100,2),new Vector2(220,44),"03 INBOUND",18,amber);
             score=Label(top,new Vector2(1,0.5f),new Vector2(-135,10),new Vector2(220,45),"000000",31,cream);
@@ -74,17 +74,18 @@ namespace Airstrike
         {
             if(game==null || game.Player==null) return;
             wave.text="WAVE "+game.Wave.ToString("00");
-            var threats=game.EnemiesPending+game.Aircraft.Count;
+            var threats=game.EnemiesPending+game.HostileAircraftCount;
             briefing.text=threats>0?threats.ToString("00")+" INBOUND":game.HostileProjectilesAlive>0?"ORDNANCE INBOUND":"SECTOR CLEAR";
             score.text=game.Score.ToString("000000"); lives.text="LIVES  "+game.Lives;
-            status.text=(game.RocketsAlive<game.RocketCapacity?"ROCKET READY":"SLOTS FULL")+"    /    JUMPS "+game.Player.JumpsLeft;
-            if(game.RocketsAlive==0 && game.Player.BarrelBlocked) status.text="MUZZLE BLOCKED    /    JUMPS "+game.Player.JumpsLeft;
-            upgrades.text="ROCKET SLOTS "+game.RocketsAlive+"/"+game.RocketCapacity+" / "+(game.PiercingEnabled?"PIERCING":"STANDARD");
+            var jumps=game.MultiJumpEnabled?"FREE":game.Player.JumpsLeft.ToString();
+            status.text=(game.RocketsAlive<game.RocketCapacity?"ROCKET READY":"SLOTS FULL")+"    /    JUMPS "+jumps;
+            if(game.RocketsAlive==0 && game.Player.BarrelBlocked) status.text="MUZZLE BLOCKED    /    JUMPS "+jumps;
+            upgrades.text="ROCKET SLOTS "+game.RocketsAlive+"/"+game.RocketCapacity+" / "+(game.PiercingEnabled?"PIERCING":"STANDARD")+(game.MultiJumpEnabled?" / BOOTS":"");
             waveTitle.text=game.WaveName;
             var warning=false;
             foreach(var aircraft in game.Aircraft) if(aircraft!=null && aircraft.IsTelegraphing) warning=true;
             supplyHint.text=warning?"ROCKET LOCK  /  MOVE FROM THE LINE":Time.time<game.SupplyFeedbackUntil?game.SupplyMessage:
-                game.Supplies.Count>0?"SUPPLY INBOUND  /  WALK TO COLLECT":"";
+                PickupHint();
             coverHint.text=game.Playing && Time.time<game.CoverFeedbackUntil
                 ? "COVER ABSORBED "+Mathf.RoundToInt(game.LastCoverAbsorption*100)+"%"
                 : game.Player.Protected && game.Player.Health>0 ? "RESPAWN SHIELD" : "";
@@ -111,6 +112,29 @@ namespace Airstrike
             crosshair.gameObject.SetActive(game.Playing);
             for(var i=1;i<reticleBars.Length;i++) reticleBars[i].color=game.Player.BarrelBlocked?new Color(1,0.35f,0.22f):amber;
             hitMarker.SetActive(game.Playing && Time.time<game.HitFeedbackUntil);
+        }
+
+        private string PickupHint()
+        {
+            var best=float.PositiveInfinity; var message="";
+            foreach(var crate in game.Supplies)
+            {
+                if(crate==null) continue;
+                var distance=Vector2.Distance(crate.transform.position,game.Player.Body.position);
+                if(distance>=best) continue;
+                best=distance; message=SupplyRules.Name(crate.Kind)+"  /  "+Mathf.CeilToInt(distance)+"m TO PICKUP";
+            }
+            foreach(var pilot in game.Pilots)
+            {
+                if(pilot==null) continue;
+                var distance=Vector2.Distance(pilot.transform.position,game.Player.Body.position);
+                if(distance>=best) continue;
+                best=distance; message="WOUNDED PILOT  /  "+Mathf.CeilToInt(distance)+"m TO RESCUE";
+            }
+            if(message!="") return message;
+            foreach(var aircraft in game.Aircraft)
+                if(aircraft!=null && aircraft.IsSupplyTransport) return "CARGO: "+SupplyRules.Name(aircraft.Cargo)+"  /  SHOOT IT DOWN";
+            return "";
         }
 
         private RectTransform Panel(string name,Transform parent,Vector2 anchor,Vector2 position,Vector2 size,Color color)

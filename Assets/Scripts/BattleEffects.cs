@@ -9,10 +9,21 @@ namespace Airstrike
         private readonly List<PooledBlast> pool=new List<PooledBlast>();
         private Material[] palette;
         private int reuse;
+        private EmpPulse emp;
         public int PooledCount => pool.Count;
         public int ActiveCount { get { var count=0; foreach(var item in pool) if(item.gameObject.activeSelf) count++; return count; } }
 
         public void Initialize(Material[] materials) { palette=materials; }
+
+        public void Pulse(Vector2 position)
+        {
+            if(emp==null)
+            {
+                emp=new GameObject("EMP pulse").AddComponent<EmpPulse>(); emp.transform.SetParent(transform,false);
+                emp.Initialize(palette[8]);
+            }
+            emp.Begin(position);
+        }
 
         public void Emit(Vector2 position,float radius)
         {
@@ -25,6 +36,35 @@ namespace Airstrike
             }
             if(effect==null) { effect=pool[reuse++%pool.Count]; }
             effect.Begin(position,radius);
+        }
+    }
+
+    public sealed class EmpPulse : MonoBehaviour
+    {
+        private LineRenderer ring;
+        private float age;
+        public void Initialize(Material material)
+        {
+            ring=gameObject.AddComponent<LineRenderer>(); ring.sharedMaterial=material;
+            ring.loop=true; ring.positionCount=64; ring.useWorldSpace=false;
+            var tint=new MaterialPropertyBlock(); tint.SetColor("_BaseColor",new Color(0.3f,0.85f,1)); ring.SetPropertyBlock(tint);
+        }
+        public void Begin(Vector2 position)
+        {
+            transform.position=new Vector3(position.x,position.y,-0.6f); age=0;
+            gameObject.SetActive(true); Pose();
+        }
+        private void Update()
+        {
+            age+=Time.deltaTime;
+            if(age>=0.7f) { gameObject.SetActive(false); return; }
+            Pose();
+        }
+        private void Pose()
+        {
+            var radius=Mathf.Lerp(0.5f,30,age/0.7f);
+            ring.widthMultiplier=Mathf.Lerp(0.16f,0.015f,age/0.7f);
+            for(var i=0;i<64;i++) { var a=i*Mathf.PI*2/64; ring.SetPosition(i,new Vector3(Mathf.Cos(a)*radius,Mathf.Sin(a)*radius,0)); }
         }
     }
 

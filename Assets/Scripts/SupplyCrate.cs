@@ -14,11 +14,12 @@ namespace Airstrike
         public void Initialize(AirstrikeGame owner,SupplyKind kind)
         {
             game=owner; Kind=kind;
-            var color=owner.Palette[kind==SupplyKind.RocketSlot?3:4];
+            var color=owner.Palette[kind==SupplyKind.RocketSlot?3:kind==SupplyKind.Piercing?4:kind==SupplyKind.Emp?19:18];
             GameArt.Shape("Supply box",PrimitiveType.Cube,transform,Vector3.zero,Vector3.one*0.65f,color);
             GameArt.Shape("Supply band",PrimitiveType.Cube,transform,new Vector3(0,0,-0.34f),new Vector3(0.15f,0.68f,0.04f),owner.Palette[8]);
-            if(kind==SupplyKind.Piercing)
-                GameArt.Shape("Piercing symbol",PrimitiveType.Cube,transform,new Vector3(0.15f,0,-0.36f),new Vector3(0.2f,0.08f,0.04f),owner.Palette[8]);
+            var icon=new GameObject("Supply symbol").transform; icon.SetParent(transform,false);
+            icon.localPosition=new Vector3(0,0,-0.37f);
+            GameArt.SupplyIcon(icon,kind,owner.Palette[kind==SupplyKind.RocketSlot || kind==SupplyKind.JumpBoots?7:8]);
             parachute=new GameObject("Supply parachute").transform; parachute.SetParent(transform,false);
             GameArt.Shape("Canopy",PrimitiveType.Sphere,parachute,new Vector3(0,1.2f,0),new Vector3(1.6f,0.3f,0.8f),color);
             for(var i=-1;i<=1;i+=2)
@@ -36,7 +37,7 @@ namespace Airstrike
             if(Landed) transform.position=new Vector3(transform.position.x,hit.point.y+0.34f,0);
             else transform.position+=Vector3.down*fall;
             parachute.gameObject.SetActive(!Landed);
-            if(game.Player.Health>0 && Vector2.Distance(transform.position,game.Player.Body.position)<1.05f)
+            if(game.CanReachPickup(transform.position))
             {
                 Collected=true;
                 game.CollectSupply(this);

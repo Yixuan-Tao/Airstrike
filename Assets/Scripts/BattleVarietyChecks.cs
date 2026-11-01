@@ -143,6 +143,7 @@ namespace Airstrike
 
             game.SpawnInterval=0.06f; game.WaveOpeningSeconds=0.08f; game.WaveIntermissionSeconds=0.12f;
             var drops=game.SuppliesDropped;
+            var cargoDestroyed=0;
             var seenWaves=new HashSet<int>(); var fastInWave2=false; var heliInWave3=false; var armorInWave4=false;
             deadline=Time.time+15;
             while(game.Wave<=6 && Time.time<deadline)
@@ -154,6 +155,7 @@ namespace Airstrike
                     if(aircraft.SpawnWave==2 && aircraft.Role==AircraftRole.FastBomber) fastInWave2=true;
                     if(aircraft.SpawnWave==3 && aircraft.Role==AircraftRole.Helicopter) heliInWave3=true;
                     if(aircraft.SpawnWave==4 && aircraft.Armored) armorInWave4=true;
+                    if(aircraft.IsSupplyTransport) cargoDestroyed++;
                     aircraft.Damage(1000);
                 }
                 CancelProjectiles(false);
@@ -161,7 +163,9 @@ namespace Airstrike
             }
             report.authoredWavesCleared=game.CompletedWaves; report.waveSupplyDrops=game.SuppliesDropped-drops;
             check(game.Wave>=7 && fastInWave2 && heliInWave3 && armorInWave4,"The live scheduler progresses through all six authored waves and introduces the intended threats.");
-            check(report.waveSupplyDrops==3,"Clearing waves two, four and six produces exactly one supply reward each.");
+            report.authoredTransports=game.TransportsSpawned;
+            check(report.authoredTransports==3,"Waves two, four and six each launch one optional cargo transport.");
+            check(report.waveSupplyDrops==cargoDestroyed,"Only shot-down transports drop cargo; clearing a wave grants no automatic crate.");
             check(WavePlan.Get(30).Spawns.Count<=12,"Endless waves keep a bounded enemy budget.");
         }
 

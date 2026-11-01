@@ -1,4 +1,4 @@
-param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.4.1')
+param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.5.0')
 $ErrorActionPreference = 'Stop'
 $projectPath = Split-Path $PSScriptRoot -Parent
 $buildPath = Join-Path $projectPath 'Builds\Skybreach'
@@ -18,7 +18,8 @@ Esc：暂停或继续
 R：重新开始
 暂停或结算时 Q：退出
 
-v0.4.1：普通炸弹改为较窄、较浅的弹坑，玩家火箭也缩小开挖范围，延长地形可调整的时间。持续轰炸仍会逐渐挖深，右键主动挖掘保持原样。保留三类敌人、两种补给与前六波配置。
+v0.5：偶数波出现补给机，击落才会掉箱子。新增EMP（拾取后击落视野内敌机）和跳跳靴（本局连续空中跳跃）；捕获受伤飞行员增加一条生命，最多六条。补给和飞行员靠近自动领取，土墙会阻挡领取。复活保留升级，重开清空。
+保留v0.4.1的浅弹坑规则。补给机只有一次飞越机会；箱子和飞行员会过期，不会阻止下一波。
 当前使用占位美术。键鼠手感、声音及长时间性能请以实际试玩为准。
 
 源码：https://github.com/Yixuan-Tao/Airstrike
