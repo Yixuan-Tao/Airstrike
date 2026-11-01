@@ -16,11 +16,17 @@ namespace Airstrike
             public bool passed;
             public string error;
             public string unityVersion;
+            public string prototypeVersion = AirstrikeGame.Version;
             public bool isEditor;
             public float durationSeconds;
             public List<string> checks = new List<string>();
             public float movedDistance, doubleJumpRise;
             public int terrainCellsRemoved, kills, score, maximumRockets, runtimeErrors;
+            public int coyoteJumps, bufferedJumps, stepUps, blockedMuzzleShots;
+            public int coveredDamage, exposedDamage, stressExplosions, terrainCollidersAfterStress, restarts;
+            public float coverExposure, breachedExposure;
+            public string stage;
+            public List<string> observations = new List<string>();
         }
         private static GameplayAutomation active;
         private AirstrikeGame game;
@@ -42,6 +48,7 @@ namespace Airstrike
             if(active!=null) throw new InvalidOperationException("An acceptance run is already active.");
             var driver=new GameObject("Gameplay acceptance driver").AddComponent<GameplayAutomation>();
             active=driver; driver.game=owner; driver.reportPath=Path.GetFullPath(path);
+            UnityEngine.Random.InitState(50702);
             owner.OverrideControls=true;
             DontDestroyOnLoad(driver.gameObject);
             driver.started=Time.realtimeSinceStartup;
@@ -57,19 +64,22 @@ namespace Airstrike
             if(freezeAircraft)
                 foreach(var aircraft in game.Aircraft)
                     if(aircraft!=null) { aircraft.Speed=0; aircraft.DropBombs=false; }
-            if(Time.realtimeSinceStartup-started>45) Finish("Acceptance run timed out.");
+            if(Time.realtimeSinceStartup-started>80) Finish("Acceptance run timed out at: "+report.stage);
         }
 
         private IEnumerator Run()
         {
-            var suite=Suite();
+            var stack=new Stack<IEnumerator>();
+            stack.Push(Suite());
             while(!finished)
             {
+                if(stack.Count==0) { Finish(null); yield break; }
                 object current=null; bool moved=false; string error=null;
-                try { moved=suite.MoveNext(); if(moved) current=suite.Current; }
+                try { moved=stack.Peek().MoveNext(); if(moved) current=stack.Peek().Current; }
                 catch(Exception exception) { error=exception.ToString(); }
                 if(error!=null) { Finish(error); yield break; }
-                if(!moved) { Finish(null); yield break; }
+                if(!moved) { stack.Pop(); continue; }
+                if(current is IEnumerator nested) { stack.Push(nested); continue; }
                 yield return current;
             }
         }
@@ -87,6 +97,9 @@ namespace Airstrike
             Check(fixture!=null && fixture.transform.position.x-aircraftStart.x>3,"Enemy aircraft traverses the arena.");
             Check(game.BombsDropped>bombsBefore,"Enemy AI drops a live bomb near the player.");
             freezeAircraft=true;
+            foreach(var aircraft in game.Aircraft) { aircraft.Speed=0; aircraft.DropBombs=false; }
+            foreach(var projectile in UnityEngine.Object.FindObjectsByType<CombatProjectile>(FindObjectsSortMode.None))
+                if(!projectile.IsPlayerRocket) projectile.Cancel();
 
             var start=game.Player.Body.position;
             game.TestControls=new CombatInput { move=1,aim=new Vector2(0,10) };
@@ -96,16 +109,20 @@ namespace Airstrike
 
             var jumpStart=game.Player.Body.position.y;
             var jumpCount=game.Player.SuccessfulJumps;
+            report.observations.Add("Before jump: "+JumpState());
+            Check(game.Player.Grounded && game.Player.JumpsLeft==2,"Running along the ground does not consume a jump at collider seams.");
             game.TestControls=new CombatInput { jump=true,aim=new Vector2(0,10) };
             yield return null;
             game.TestControls=new CombatInput { aim=new Vector2(0,10) };
             yield return new WaitForSeconds(0.15f);
             var firstHeight=game.Player.Body.position.y;
+            report.observations.Add("After first jump: "+JumpState());
             game.TestControls=new CombatInput { jump=true,aim=new Vector2(0,10) };
             yield return null;
             game.TestControls=new CombatInput { aim=new Vector2(0,10) };
             yield return new WaitForSeconds(0.28f);
             report.doubleJumpRise=game.Player.Body.position.y-jumpStart;
+            report.observations.Add("After second jump: "+JumpState());
             Check(game.Player.SuccessfulJumps==jumpCount+2 && game.Player.Body.position.y>firstHeight+0.8f,"A second jump gains height while airborne.");
             game.TestControls=new CombatInput { jump=true,aim=new Vector2(0,10) };
             yield return null;
@@ -160,6 +177,8 @@ namespace Airstrike
             Check(report.maximumRockets==1,"Held fire respects one simultaneous rocket.");
             report.kills=game.Kills; report.score=game.Score; report.terrainCellsRemoved=game.Ground.RemovedCount;
 
+            yield return CombatFeelChecks.Run(game,report,Check);
+
             game.TestControls=new CombatInput { pause=true };
             yield return null;
             game.TestControls=new CombatInput();
@@ -183,18 +202,31 @@ namespace Airstrike
                 }
             }
             Check(game.GameOver && game.Lives==0,"Exhausting all lives reaches the results state.");
-            var previous=game;
-            game.TestControls=new CombatInput { restart=true };
-            yield return null;
-            yield return null;
-            Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0,"Restart reloads a clean battlefield and resets the run.");
+            for(var restart=0;restart<3;restart++)
+            {
+                var previous=game;
+                game.TestControls=new CombatInput { restart=true };
+                yield return null;
+                yield return null;
+                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0,"Restart reloads a clean battlefield and resets the run, pass "+(restart+1)+".");
+                report.restarts++;
+            }
             Check(report.runtimeErrors==0,"No runtime errors or exceptions during acceptance.");
         }
 
         private void Check(bool condition,string description)
         {
+            report.stage=description;
             if(!condition) throw new InvalidOperationException(description);
             report.checks.Add(description);
+        }
+
+        private string JumpState()
+        {
+            var p=game.Player;
+            return "time="+Time.time+", grounded="+p.Grounded+", charges="+p.JumpsLeft+", jumps="+p.SuccessfulJumps
+                +", coyote="+p.CoyoteJumps+", position="+p.Body.position+", velocity="+p.Body.linearVelocity
+                +", hp="+p.Health+", explosions="+game.Explosions;
         }
 
         private void OnLog(string message,string stack,LogType type)

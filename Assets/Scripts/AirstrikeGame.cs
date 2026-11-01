@@ -8,6 +8,7 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
+        public const string Version = "0.2.0";
         public Material[] Palette;
         public Camera MainCamera;
         public SoldierController Player { get; private set; }
@@ -24,6 +25,14 @@ namespace Airstrike
         public int Score { get; private set; }
         public int Kills { get; private set; }
         public int RocketsAlive, BombsAlive, ShotsFired, Explosions, DigOperations, BombsDropped;
+        public int BlockedMuzzleShots, CoverEvents;
+        public float LastBlastExposure { get; private set; } = 1;
+        public int LastDamageBlocked { get; private set; }
+        public float CoverFeedbackUntil { get; private set; }
+        public float LastCoverAbsorption { get; private set; }
+        public float HurtFeedbackUntil { get; private set; }
+        public float HitFeedbackUntil { get; private set; }
+        public Vector2 LastBlastOrigin { get; private set; }
         public int EnemiesPending { get; private set; }
         public float SurvivalSeconds { get; private set; }
         public float WaveBannerUntil { get; private set; }
@@ -131,11 +140,28 @@ namespace Airstrike
             return aircraft;
         }
 
-        public void LaunchRocket(Vector2 position, Vector2 direction)
+        public void LaunchRocket(Vector2 origin, Vector2 direction)
         {
-            var go = new GameObject("Player rocket"); go.transform.position = position;
+            direction.Normalize();
+            var go = new GameObject("Player rocket"); go.transform.position = origin;
             RocketsAlive++; ShotsFired++;
-            go.AddComponent<CombatProjectile>().Initialize(this,direction.normalized*27,true);
+            var projectile = go.AddComponent<CombatProjectile>();
+            projectile.Initialize(this,direction*27,true);
+            // Sweep the entire barrel first: a thin wall between the breech and
+            // muzzle must receive the impact rather than being skipped at spawn.
+            var mask = (1 << GameArt.TerrainLayer) | (1 << GameArt.EnemyLayer);
+            if (Physics.CheckSphere(origin,0.1f,mask,QueryTriggerInteraction.Ignore))
+            {
+                BlockedMuzzleShots++;
+                projectile.Impact(origin);
+            }
+            else if (Physics.SphereCast(origin,0.1f,direction,out var hit,1.05f,mask,QueryTriggerInteraction.Ignore))
+            {
+                BlockedMuzzleShots++;
+                projectile.Impact(hit.point);
+            }
+            else go.transform.position = origin + direction*1.05f;
+            Flash(origin+direction*0.8f,0.38f);
             PlaySound(0);
         }
 
@@ -149,27 +175,46 @@ namespace Airstrike
         public void Explode(Vector2 position, bool rocket)
         {
             Explosions++;
-            Ground.Carve(position,rocket?1.5f:2.1f);
-            Flash(position,rocket?2.0f:2.8f);
+            // Resolve exposure BEFORE excavating: intact soil absorbs this blast,
+            // then its crater can leave the player exposed to the next bomb.
             if (rocket)
             {
                 var targets = Aircraft.ToArray();
                 foreach (var target in targets)
                     if (target != null && Vector2.Distance(target.transform.position,position)<3)
-                        target.Damage(110);
+                        target.Damage(Mathf.RoundToInt(110*Ground.BlastTransmission(position,target.transform.position)));
             }
             else if (Player.Health > 0)
             {
                 var distance = Vector2.Distance(Player.transform.position,position);
                 if (distance < 3.3f)
                 {
-                    Player.ApplyDamage(Mathf.RoundToInt(Mathf.Lerp(85,25,distance/3.3f)));
-                    if (Player.Health > 0) Player.Body.AddForce(new Vector3((Player.transform.position.x-position.x)*2,3,0),ForceMode.Impulse);
+                    var center=(Vector2)Player.Body.position;
+                    LastBlastOrigin=position;
+                    LastBlastExposure=Ground.BlastTransmission(position,center+Vector2.up*0.60f)*0.25f
+                        + Ground.BlastTransmission(position,center+Vector2.up*0.08f)*0.55f
+                        + Ground.BlastTransmission(position,center-Vector2.up*0.55f)*0.20f;
+                    var unshielded=Mathf.RoundToInt(Mathf.Lerp(85,25,distance/3.3f));
+                    var damage=Mathf.RoundToInt(unshielded*LastBlastExposure);
+                    LastDamageBlocked=unshielded-damage;
+                    if(LastDamageBlocked>0 && !Player.Protected)
+                    {
+                        CoverEvents++; CoverFeedbackUntil=Time.time+1.6f; LastCoverAbsorption=1-LastBlastExposure;
+                    }
+                    var previousHealth=Player.Health;
+                    if(damage>0) Player.ApplyDamage(damage);
+                    if(Player.Health>0 && Player.Health<previousHealth)
+                        Player.Body.AddForce(new Vector3((Player.transform.position.x-position.x)*2,3,0)*LastBlastExposure,ForceMode.Impulse);
                 }
             }
+            Ground.Carve(position,rocket?1.5f:2.1f);
+            Flash(position,rocket?2.0f:2.8f);
             CameraRig.Shake(rocket?0.08f:0.16f);
             PlaySound(1);
         }
+
+        public void NotifyPlayerHit(int damage) { if(damage>0) HurtFeedbackUntil=Time.time+0.4f; }
+        public void NotifyAircraftHit() { HitFeedbackUntil=Time.time+0.18f; }
 
         public void Flash(Vector2 position, float radius)
         {

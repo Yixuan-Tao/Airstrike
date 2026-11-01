@@ -1,22 +1,23 @@
 {
-  "checked_at": "2026-11-01T08:02:29.6708623+08:00",
-  "prototype": "SKYBREACH v0.1",
+  "checked_at": "2026-11-01T08:37:50.0740817+08:00",
+  "prototype": "SKYBREACH v0.2.0",
   "entry_scene": "Assets/Scenes/Prototype.unity",
   "unity_version": "6000.3.27f2",
   "urp_version": "17.3.0",
   "build": {
     "status": "completed",
     "result": "Succeeded",
-    "buildId": "build_a84661811a00",
+    "buildId": "build_79d6be9a4f1c",
     "platform": "StandaloneWindows64",
-    "totalSizeBytes": 103736895,
-    "buildTimeMs": 13752,
+    "totalSizeBytes": 103753452,
+    "buildTimeMs": 9758,
     "totalErrors": 0,
     "totalWarnings": 0
   },
   "build_output": "Builds/Skybreach/Skybreach.exe",
-  "gameplay_assembly_sha256": "61AB7E89236998C1ADB2BFF4BD1131071E3494429EB31A5EE0233E49414F3FD5",
+  "gameplay_assembly_sha256": "B86887C6C3A0B58A742997DD8B6FB8456E676AEF1519DDE4721B85F4D8DE480B",
   "standalone_exit_code": 0,
+  "standalone_checks": 40,
   "standalone_report": "Docs/Validation/standalone.json",
   "frame_progress": {
     "state": "met",
@@ -24,17 +25,26 @@
     "timedOut": false,
     "member": "UnityEngine.Time.frameCount",
     "op": "changed",
-    "value": 956,
-    "initialValue": 943,
-    "elapsedMs": 109,
+    "value": 5011,
+    "initialValue": 4999,
+    "elapsedMs": 103,
     "framesObserved": 2
   },
   "preview": "Docs/Images/skybreach.png",
   "preview_staged": true,
+  "windows_archive": {
+    "name": "Skybreach-v0.2.0-Windows.zip",
+    "bytes": 39811242,
+    "sha256": "CD1C6B5EBE31A79187DD0BF65F8702A7585DAB41D6847EE480E6E1C277206BD0",
+    "zip_entries": 190,
+    "required_files_verified": true
+  },
   "verification_limits": [
-    "Internal game-control inputs, not OS keyboard/mouse automation.",
-    "Targets are immobilized during repeatable shooting checks; normal AI flight and bomb release are tested separately.",
-    "Standalone acceptance uses nographics and noaudio; manual input feel, sound and sustained graphical performance remain unverified."
+    "Internal control inputs; no OS keyboard or mouse automation.",
+    "Shooting fixtures immobilize targets. Normal enemy flight and bomb release are checked separately.",
+    "Timing and collision checks use controlled physics fixtures.",
+    "Standalone acceptance is nographics and noaudio, not a graphical performance benchmark.",
+    "Manual feel, sound and long-session stability remain unverified."
   ],
   "external_asset_datasets_used": [],
   "original_apk_code_or_art_included": false,

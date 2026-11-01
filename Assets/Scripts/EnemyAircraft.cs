@@ -11,6 +11,10 @@ namespace Airstrike
         private int direction;
         private float altitude, bombAt, phase;
         private bool dead;
+        private Renderer[] modelRenderers;
+        private MaterialPropertyBlock hitProperties;
+        private float hitUntil;
+        private bool tintActive;
 
         public void Initialize(AirstrikeGame owner, int travelDirection, int wave)
         {
@@ -26,11 +30,18 @@ namespace Airstrike
             if (direction < 0) model.localRotation = Quaternion.Euler(0,180,0);
             GameArt.Aircraft(model,game.Palette[4],game.Palette[5],game.Palette[7]);
             if (Health > 100) GameArt.Shape("Armor band",PrimitiveType.Cube,model,Vector3.zero,new Vector3(0.35f,0.65f,0.7f),game.Palette[3]);
+            modelRenderers=model.GetComponentsInChildren<Renderer>();
+            hitProperties=new MaterialPropertyBlock();
         }
 
         private void Update()
         {
             if (dead || game == null || !game.Playing) return;
+            if(tintActive && Time.time>=hitUntil)
+            {
+                foreach(var renderer in modelRenderers) renderer.SetPropertyBlock(null);
+                tintActive=false;
+            }
             var p = transform.position;
             p.x += direction * Speed * Time.deltaTime;
             if (Speed > 0) p.y = altitude + Mathf.Sin(Time.time*0.85f+phase)*0.32f;
@@ -46,7 +57,11 @@ namespace Airstrike
 
         public void Damage(int amount)
         {
-            if (dead) return;
+            if (dead || amount<=0) return;
+            game.NotifyAircraftHit();
+            hitUntil=Time.time+0.12f; tintActive=true;
+            hitProperties.SetColor("_BaseColor",new Color(1,0.93f,0.75f));
+            foreach(var renderer in modelRenderers) renderer.SetPropertyBlock(hitProperties);
             Health -= amount;
             if (Health > 0) return;
             dead = true;

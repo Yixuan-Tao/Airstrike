@@ -19,6 +19,7 @@ public static class ArrangePreview
         game.Ground.Carve(new Vector2(3,-0.2f),2);
         game.Ground.Carve(new Vector2(-14,-0.3f),1.7f);
         Physics.SyncTransforms();
-        return new {staged=true,aircraft=game.Aircraft.Count,removedCells=game.Ground.RemovedCount};
+        game.Explode((Vector2)game.Player.Body.position+new Vector2(-2.4f,-1.3f),false);
+        return new {staged=true,aircraft=game.Aircraft.Count,removedCells=game.Ground.RemovedCount,coverAbsorption=game.LastCoverAbsorption};
     }
 }

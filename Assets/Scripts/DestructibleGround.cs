@@ -44,6 +44,32 @@ namespace Airstrike
             return Bottom + Cell;
         }
 
+        public bool IsSolidAt(Vector2 point)
+        {
+            var x = Mathf.FloorToInt((point.x - Left) / Cell);
+            var y = Mathf.FloorToInt((point.y - Bottom) / Cell);
+            return Filled(x, y);
+        }
+
+        // Sample the authoritative occupancy grid, so disabled/deferred colliders
+        // and the decorative depth of the mesh cannot change blast protection.
+        public float BlastTransmission(Vector2 origin, Vector2 target)
+        {
+            var delta = target - origin;
+            var length = delta.magnitude;
+            if (length < 0.16f) return 1;
+            var direction = delta / length;
+            const float step = Cell / 10;
+            var thickness = 0f;
+            for (var distance = 0.08f; distance < length - 0.08f; distance += step)
+            {
+                var segment = Mathf.Min(step, length - 0.08f - distance);
+                if (IsSolidAt(origin + direction * (distance + segment * 0.5f))) thickness += segment;
+                if (thickness >= 0.75f) return 0;
+            }
+            return Mathf.Clamp01(1 - thickness / 0.75f);
+        }
+
         public int Carve(Vector2 center, float radius)
         {
             var minX = Mathf.Clamp(Mathf.FloorToInt((center.x - radius - Left) / Cell), 0, Columns - 1);

@@ -1,30 +1,28 @@
-# Airstrike / SKYBREACH
+# Airstrike / SKYBREACH v0.2.0
 
-基于 Unity 6.3 的侧视 2.5D 空袭生存原型：控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，并躲避轰炸。
-
-当前版本为可试玩的 v0.1。主分支已由 Godot 工程切换为 Unity；旧版本保留在[历史提交](https://github.com/Yixuan-Tao/Airstrike/tree/8a4cc94ae6e95015b24b92bd49b9a5f1b46c8091)中。
+Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，通过地形掩护躲避轰炸。
 
 ![运行场景预览](Docs/Images/skybreach.png)
 
-预览来自真实运行场景；为展示画面调整过敌机位置和坑洞，不是人工实玩录像。人物、飞机和界面使用自制简模及占位美术。
+画面为自制占位简模。预览由真实运行场景离屏生成，调整过敌机与坑洞位置，不是人工实玩录像。
 
-## 已实现
+## v0.2 的重点
 
-- 左右移动、二段跳、鼠标瞄准和火箭射击。
-- 一枚火箭同时在空中，命中或消失后可再次发射。
-- 敌机循环飞行、投弹、爆炸伤害及击杀计分。
-- 受距离限制的挖掘，爆炸坑洞，以及实时更新的地形碰撞。
-- 波次推进、三条生命、复活保护、暂停、结算和重新开始。
-- 第 4 波开始可能出现装甲飞机。
-- 代码合成音效与本机最高完成波数记录。
+- **掩体参与伤害判定**：爆炸先考虑头部、躯干、腿部方向上的土层遮挡，再破坏地形。足够厚的土墙可以挡住当前爆炸；下一次轰炸可能穿过已经炸开的缺口。露出身体的一部分仍可能受伤。
+- **跳跃容错**：离地后 0.12 秒内仍可使用地面起跳；提前 0.14 秒按下跳跃，可在落地时执行。离地宽限结束后保留一次空中跳跃。
+- **小台阶辅助**：正常行走可以跨上一个 0.5 单位地形格，头顶空间不足时不会自动抬升。
+- **贴墙射击**：发射前检查整个枪管路径，防止枪口越过薄墙生成火箭。枪口受阻会提示，射击仍可用来爆破近处土墙。
+- **反馈**：加入掩体吸收提示、受伤方向、敌机受击闪光、命中标记和枪口闪光。
 
-本原型依据玩法规则独立实现，没有导入原 APK 的代码、图像或音频。补给升级、特殊敌机、坠机残骸、完整设置及最终美术尚未实现。地形目前是 0.5 单位网格的三维剖面，边缘呈阶梯状。
+完整变更见 [CHANGELOG.md](CHANGELOG.md)。补给升级、特殊敌机、坠机残骸、完整设置及最终美术仍待开发。
 
-## 在 Unity 中试玩
+## 试玩
 
-1. 安装并激活适用许可的 Unity **6000.3.27f2**。
-2. 用 Unity Hub 打开仓库根目录，等待依赖导入。
-3. 打开 `Assets/Scenes/Prototype.unity`，进入 Play Mode。
+本机已有构建时双击根目录 `试玩.cmd`。源码克隆不含编译产物，请先在 Unity 中运行或生成 Windows 构建。
+
+1. 使用已激活适用许可的 Unity **6000.3.27f2** 打开工程根目录。
+2. 等待依赖导入，打开 `Assets/Scenes/Prototype.unity`。
+3. 进入 Play Mode。
 
 | 操作 | 按键 |
 |---|---|
@@ -37,15 +35,15 @@
 | 重新开始 | R |
 | 退出独立程序 | 暂停或结算时按 Q，或关闭窗口 |
 
-清空本波全部敌机和炸弹后进入下一波。飞出画面的敌机会再次飞越战场，需要击落才能清空威胁。
+每次只允许一枚火箭在空中；落地恢复两次跳跃。初始三条生命，复活时短暂保护。清空本波敌机和炸弹后进入下一波，飞出画面的敌机会循环飞越战场。第 4 波开始可能出现需要两次火箭命中的装甲飞机。
 
-## Windows 构建
+地形为 0.5 单位网格的三维剖面，最底层基岩保留；土层吸收是基于网格的游戏规则近似。界面暂用英文，音效由代码合成。
 
-仓库保存源工程，编译产物与 Unity 缓存不入库。构建完成后可双击根目录的 `试玩.cmd`；复制给其他电脑时需要整个 `Builds/Skybreach` 文件夹。
+## Windows 构建和后台验收
 
-环境：Universal RP **17.3.0**、Pipeline **0.9.1-exp.1**，目标 Windows x64 / Mono。开发时使用的 Unity CLI 版本为 **1.0.0-beta.15**。
+环境：Universal RP **17.3.0**、Pipeline **0.9.1-exp.1**、Windows x64 / Mono。开发使用 Unity CLI **1.0.0-beta.15**。
 
-已安装官方 Unity CLI 后，在仓库根目录运行 PowerShell：
+安装官方 Unity CLI 后，在工程根目录运行 PowerShell：
 
 ```powershell
 $cli = 'unity'
@@ -57,39 +55,38 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 & $cli command build status --project-path $projectPath --format json
 ```
 
-构建是异步操作，等待状态为 `completed` 且结果为 `Succeeded` 后运行：
+等待 `completed` 和 `Succeeded` 后执行：
 
 ```powershell
 & './AgentScripts/VerifyStandalone.ps1'
 ```
 
-验收通过游戏内部控制输入操作真实物理与战斗逻辑，隐藏运行独立程序，不发送系统键鼠事件。后台模式忽略用户在其他软件中的键鼠操作。
+通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.2.0-Windows.zip`。
 
-## 验证记录
+独立程序与依赖位于 `Builds/Skybreach`；复制给其他电脑时需要整个文件夹。Unity 缓存、构建输出和本机日志不入库。
 
-2026-11-01 在 Windows 上的最终构建成功，零错误、零警告；独立程序退出码为 0，23 条自动检查通过。
+验收使用游戏内部控制输入，不发送系统键鼠事件。后台模式忽略用户在其他软件中的操作。检查覆盖基础战斗、跳跃时序、单格台阶及低顶限制、贴墙射击、掩体先吸收后破坏、连续爆炸、暂停、死亡复活及多次重开。
 
-记录见 [验收摘要](Docs/Validation/README.md)、[独立运行原始结果](Docs/Validation/standalone.json)和[构建汇总](Docs/Validation/acceptance.json)。这些是本地执行记录，不是 GitHub Actions 验证。
+结果见 [验收摘要](Docs/Validation/README.md)、[独立程序记录](Docs/Validation/standalone.json)和[构建汇总](Docs/Validation/acceptance.json)。本机完整日志位于 `Logs/`。
 
-检查覆盖移动、二段跳及次数限制、落地恢复、敌机飞行投弹、挖掘、火箭命中与数量限制、爆炸伤害、击杀计分、波次推进、暂停继续、死亡复活、结算和重开。射击检查将目标固定位置以便重复，正常飞行与投弹另行检查。
-
-独立验收使用无图形、无声音模式；键鼠手感、声音和长时间图形性能仍需人工试玩。后台帧计数不是性能基准。
+验收使用无图形、无声音模式，射击阶段固定目标位置以保证重复，正常飞行投弹另行检查。人工键鼠手感、声音、长时间稳定性和图形性能仍需实际试玩；后台帧数不能代表游戏帧率。
 
 ## 工程结构
 
-- `Assets/Scenes/Prototype.unity`：游戏入口；运行时生成战场。
-- `Assets/Scripts/`：操作、战斗、敌机、地形、界面及可选验收驱动。
-- `Assets/Art/Prototype/`：引用到构建中的材质。
+- `Assets/Scenes/Prototype.unity`：游戏入口，运行时生成战场。
+- `Assets/Scripts/`：操作、敌机、战斗、掩体判定、地形和界面。
+- `GameplayAutomation.cs`、`CombatFeelChecks.cs`：仅通过验收参数启用的自动检查。
+- `Assets/Art/Prototype/`：构建使用的材质。
 - `AgentScripts/BuildPrototype.cs`：通过 Unity API 重建入口和材质。
-- `AgentScripts/CapturePrototype.cs`、`ArrangePreview.cs`：后台离屏预览。
-- `AgentScripts/VerifyStandalone.ps1`：独立程序自动验收。
-- `Packages/`、`ProjectSettings/`：锁定依赖与项目设置。
-- `Bootstrap.unity` 与对应脚本：早期环境核验，非游戏入口。
+- `AgentScripts/ArrangePreview.cs`、`CapturePrototype.cs`：后台场景预览。
+- `AgentScripts/VerifyStandalone.ps1`：独立程序验收入口。
+- `Packages/`、`ProjectSettings/`：依赖与项目设置。
+- `Bootstrap.unity` 和对应脚本：早期环境验证，非游戏入口。
 
-通过 CLI 重启编辑器后，先明确打开 `Assets/Scenes/Prototype.unity`，再开始 Play Mode。持久脚本修改后先确认编译完成；场景与材质通过 Unity API 保存。
+CLI 重启编辑器后可能进入空场景；开始 Play Mode 前明确打开 `Assets/Scenes/Prototype.unity`。修改持久脚本后先确认编译完成，运行前开启后台推进并用 `job wait` 验证帧数确实变化，结束后还原覆盖设置。场景和材质通过 Unity API 保存。
 
-## 素材与许可
+## 素材和历史
 
-[NVIDIA SimReady](https://huggingface.co/datasets/nvidia/simready-assets) 和 [Scenario 3D Collection](https://huggingface.co/datasets/scenario-labs/3d-collection) 列为后续素材候选，本版未导入其模型。来源与选用记录见 [ASSET_SOURCES.md](ASSET_SOURCES.md)。
+本原型依据游戏规则独立实现，没有导入原 APK 的代码、图像或音频。用户提供的素材库作为后续候选，本版未导入外部模型，详见 [ASSET_SOURCES.md](ASSET_SOURCES.md)。
 
-沿用仓库原有 [MIT License](LICENSE)。Unity 及包依赖遵循各自随附的许可。
+主分支已切换为 Unity，原 Godot 工程保留在[历史提交](https://github.com/Yixuan-Tao/Airstrike/tree/8a4cc94ae6e95015b24b92bd49b9a5f1b46c8091)。沿用仓库原有 [MIT License](LICENSE)，Unity 和依赖包遵循各自许可。

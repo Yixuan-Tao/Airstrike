@@ -1,4 +1,4 @@
-param([int]$TimeoutSeconds = 50)
+param([int]$TimeoutSeconds = 90)
 $ErrorActionPreference = 'Stop'
 $projectPath = Split-Path $PSScriptRoot -Parent
 $executable = Join-Path $projectPath 'Builds\Skybreach\Skybreach.exe'
@@ -9,7 +9,9 @@ New-Item -ItemType Directory -Force -Path (Join-Path $projectPath 'Logs') | Out-
 if (Test-Path -LiteralPath $reportPath) { Remove-Item -LiteralPath $reportPath }
 $playerArgs = '-batchmode -nographics -noaudio -logFile "' + $logPath + '" --gameplay-smoke "' + $reportPath + '"'
 $process = Start-Process -FilePath $executable -ArgumentList $playerArgs -WindowStyle Hidden -PassThru
-if (!$process.WaitForExit($TimeoutSeconds * 1000)) {
+$deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+while (!$process.HasExited -and (Get-Date) -lt $deadline) { $process.WaitForExit(1000) | Out-Null }
+if (!$process.HasExited) {
     Stop-Process -Id $process.Id -ErrorAction SilentlyContinue
     throw 'Gameplay acceptance timed out; see this project log.'
 }

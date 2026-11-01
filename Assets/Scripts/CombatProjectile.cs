@@ -8,10 +8,13 @@ namespace Airstrike
         private Vector2 velocity;
         private bool rocket, finished;
         private float age;
+        public bool IsPlayerRocket => rocket;
+        public void Cancel() { Finish(); }
 
         public void Initialize(AirstrikeGame owner, Vector2 initialVelocity, bool playerRocket)
         {
             game = owner; velocity = initialVelocity; rocket = playerRocket;
+            transform.rotation = Quaternion.Euler(0,0,Mathf.Atan2(velocity.y,velocity.x)*Mathf.Rad2Deg-90);
             var visual = GameArt.Shape(rocket ? "Rocket casing" : "Bomb casing", PrimitiveType.Capsule,
                 transform,Vector3.zero,rocket ? new Vector3(0.15f,0.32f,0.15f) : new Vector3(0.32f,0.38f,0.32f),game.Palette[rocket?3:5]);
             if (rocket)
@@ -48,6 +51,13 @@ namespace Airstrike
             if (finished) return;
             game.Explode(transform.position,rocket);
             Finish();
+        }
+
+        public void Impact(Vector2 point)
+        {
+            if(finished) return;
+            transform.position=new Vector3(point.x,point.y,0);
+            Detonate();
         }
 
         private void Finish()
