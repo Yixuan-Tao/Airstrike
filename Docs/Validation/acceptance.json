@@ -1,23 +1,23 @@
 {
-  "checked_at": "2026-11-01T16:42:33.4956107+08:00",
-  "prototype": "SKYBREACH v0.5.0",
+  "checked_at": "2026-11-01T19:52:31.9940337+08:00",
+  "prototype": "SKYBREACH v0.5.1",
   "entry_scene": "Assets/Scenes/Prototype.unity",
   "unity_version": "6000.3.27f2",
   "urp_version": "17.3.0",
   "build": {
     "status": "completed",
     "result": "Succeeded",
-    "buildId": "build_aa0e409bcf3d",
+    "buildId": "build_beb7a24bf733",
     "platform": "StandaloneWindows64",
-    "totalSizeBytes": 103827202,
-    "buildTimeMs": 10253,
+    "totalSizeBytes": 103839298,
+    "buildTimeMs": 4620,
     "totalErrors": 0,
     "totalWarnings": 0
   },
   "build_output": "Builds/Skybreach/Skybreach.exe",
-  "gameplay_assembly_sha256": "FD5E8F33EBFF83F68EE4EC4C47810E321E76B2D366E0FFA939269F79B78746B2",
+  "gameplay_assembly_sha256": "7812F99EDD31256D30EE71355BE0B992C156A415F760484F16B0F3544B08D247",
   "standalone_exit_code": 0,
-  "standalone_checks": 109,
+  "standalone_checks": 114,
   "standalone_report": "Docs/Validation/standalone.json",
   "frame_progress": {
     "state": "met",
@@ -27,18 +27,18 @@
     "op": "changed",
     "value": 84,
     "initialValue": 71,
-    "elapsedMs": 107,
+    "elapsedMs": 109,
     "framesObserved": 2
   },
   "preview": "Docs/Images/skybreach.png",
-  "preview_staged": true,
+  "preview_staged": false,
   "preview_visually_reviewed": true,
   "visual_comparison": "Docs/ART_DIRECTION.md",
   "windows_archive": {
-    "name": "Skybreach-v0.5.0-Windows.zip",
-    "bytes": 39888645,
-    "sha256": "6F7FC635D25B3C7C835F9963E8F587026B5BF5177A8BD4BDA4D4E33EBE84E17C",
-    "zip_entries": 206,
+    "name": "Skybreach-v0.5.1-Windows.zip",
+    "bytes": 39907009,
+    "sha256": "67FBEF4D4319E4EDD656C21407334C23BB359F63EB3AB3E10451AE05EC3898DF",
+    "zip_entries": 210,
     "required_files_verified": true,
     "tested_assembly_verified": true
   },
@@ -71,5 +71,18 @@
     "boots_survive_respawn": true,
     "optional_resources_expire": true,
     "scope": "Controlled fixtures; pilot probability forced only for dedicated checks; expiry uses accelerated simulation time."
+  },
+  "pacing_observation": {
+    "report": "Docs/Validation/pacing.json",
+    "passed": true,
+    "exit_code": 0,
+    "checks": 7,
+    "scenarios": 3,
+    "seconds_per_scenario": 120.0,
+    "seed": 1739,
+    "time_scale": 8.0,
+    "scope": "One first-wave bomber; protected surface-following player; legacy cadence replay uses current shallow craters. Patrol is a position probe, not validated navigation.",
+    "normal_first_bomb_delay": 5.13365364074707,
+    "normal_bomb_interval": 4.350608825683594
   }
 }

@@ -1,10 +1,16 @@
-# Airstrike / SKYBREACH v0.5.0
+# Airstrike / SKYBREACH v0.5.1
 
 Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，通过地形掩护躲避轰炸。
 
 ![运行场景预览](Docs/Images/skybreach.png)
 
-画面采用自制的低模美术初版，仍会继续打磨。预览由真实运行场景离屏生成，调整过敌机与坑洞位置，不是人工实玩录像。
+画面采用自制的低模美术初版，仍会继续打磨。当前预览为新局运行场景的离屏画面，不是人工实玩录像。
+
+## v0.5.1 战斗节奏与局部地形
+
+前三波调整为1、2、3架敌机，前六波增加出敌间隔。普通机前六波以4至6秒随机间隔沿航线投弹，不再要求靠近玩家才投弹；后续缓慢提高到3.5至5.5秒。高速机保留三连投弹，直升机保留瞄准预警，继续形成明确针对玩家的威胁。
+
+浅弹坑和主动挖掘规则保留。新增14单位宽区域的土量、可挖深度、站立空间和连续步行区段观测，并通过实际飞行/弹体比较旧节奏、新节奏与巡回位置样例。条件与结果见 [节奏和局部地形说明](Docs/PACING_AND_TERRAIN.md)，这些受保护、加速的观测不代表人工生存或寻路验收。
 
 ## v0.5 补给与生命循环
 
@@ -46,12 +52,12 @@ Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和�
 
 | 波次 | 名称 | 敌人组成 | 可击落的补给机货物 |
 |---|---|---|---|
-| 1 | FIRST CONTACT | 3 架普通机 | — |
-| 2 | FAST MOVERS | 2 架普通机、2 架高速机 | 火箭位 |
-| 3 | ROCKET LOCK | 2 架普通机、1 架高速机、1 架直升机 | — |
-| 4 | HARD TARGETS | 1 架装甲机、1 架普通机、2 架高速机、1 架直升机 | 穿透弹 |
-| 5 | CROSS FIRE | 1 架普通机、3 架高速机、2 架直升机 | — |
-| 6 | HOLD THE SECTOR | 1 架装甲机、1 架普通机、3 架高速机、2 架直升机 | 跳跳靴 |
+| 1 | FIRST CONTACT | 1 架普通机 | — |
+| 2 | FAST MOVERS | 1 架普通机、1 架高速机 | 火箭位 |
+| 3 | ROCKET LOCK | 1 架普通机、1 架高速机、1 架直升机 | — |
+| 4 | HARD TARGETS | 1 架装甲机、1 架普通机、1 架高速机、1 架直升机 | 穿透弹 |
+| 5 | CROSS FIRE | 1 架普通机、2 架高速机、2 架直升机 | — |
+| 6 | HOLD THE SECTOR | 1 架装甲机、1 架普通机、2 架高速机、2 架直升机 | 跳跳靴 |
 
 装甲机与直升机需要多次命中。无尽波每波最多 12 架敌机，另外最多保留一架补给机。第8波提供EMP，随后偶数波重复火箭位、穿透弹、跳跳靴、EMP的货物顺序。箱子35秒、飞行员30秒后消失，场上各最多保留三个；这些奖励对象不会阻止进入下一波。
 
@@ -110,7 +116,7 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 & './AgentScripts/VerifyStandalone.ps1'
 ```
 
-通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.5.0-Windows.zip`。
+通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.5.1-Windows.zip`。`./AgentScripts/VerifyPacing.ps1` 单独运行三组局部地形观测，输出 `Logs/PacingStandalone.json`。
 
 独立程序与依赖位于 `Builds/Skybreach`；复制给其他电脑时需要整个文件夹。Unity 缓存、构建输出和本机日志不入库。
 
@@ -124,7 +130,8 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 
 - `Assets/Scenes/Prototype.unity`：游戏入口，运行时生成战场。
 - `Assets/Scripts/`：操作、敌机、战斗、掩体判定、地形和界面。
-- `GameplayAutomation.cs`、`CombatFeelChecks.cs`、`BattleVarietyChecks.cs`、`TerrainBalanceChecks.cs`、`PresentationChecks.cs`、`SupplyCycleChecks.cs`：仅通过验收参数启用的检查。
+- `GameplayAutomation.cs`、`CombatFeelChecks.cs`、`BattleVarietyChecks.cs`、`TerrainBalanceChecks.cs`、`PresentationChecks.cs`、`SupplyCycleChecks.cs`、`PacingChecks.cs`：仅通过验收参数启用的检查。
+- `PacingAutomation.cs`：通过 `--pacing-probe` 单独启用的三组局部地形观测。
 - `Assets/Art/Prototype/`：构建使用的材质。
 - `AgentScripts/BuildPrototype.cs`：通过 Unity API 重建入口和材质。
 - `AgentScripts/ArrangePreview.cs`、`CapturePrototype.cs`：后台场景预览。

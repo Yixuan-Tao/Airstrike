@@ -4,6 +4,13 @@ using UnityEngine.Rendering;
 
 namespace Airstrike
 {
+    [System.Serializable]
+    public sealed class TerrainWindow
+    {
+        public float centerX, width, retainedFraction, minimumColumnSoil, centerColumnSoil, longestWalkableRun;
+        public int initialCells, remainingCells, standableColumns;
+    }
+
     // A 2D occupancy grid extruded into a 3D cross-section. Rebuild only touched chunks.
     public sealed class DestructibleGround : MonoBehaviour
     {
@@ -52,6 +59,40 @@ namespace Airstrike
             var x = Mathf.FloorToInt((point.x - Left) / Cell);
             var y = Mathf.FloorToInt((point.y - Bottom) / Cell);
             return Filled(x, y);
+        }
+
+        public TerrainWindow InspectWindow(float centerX,float width=14)
+        {
+            var result=new TerrainWindow {centerX=centerX,width=width,minimumColumnSoil=float.PositiveInfinity};
+            var first=Mathf.Clamp(Mathf.FloorToInt((centerX-width*0.5f-Left)/Cell),0,Columns-1);
+            var last=Mathf.Clamp(Mathf.CeilToInt((centerX+width*0.5f-Left)/Cell)-1,0,Columns-1);
+            var center=Mathf.Clamp(Mathf.FloorToInt((centerX-Left)/Cell),first,last);
+            var run=0; var previousFeet=0f;
+            for(var x=first;x<=last;x++)
+            {
+                var remaining=0;
+                result.initialCells+=originalTop[x]; // Exclude the retained bedrock row.
+                for(var y=1;y<=originalTop[x];y++) if(solid[x,y]) remaining++;
+                result.remainingCells+=remaining;
+                result.minimumColumnSoil=Mathf.Min(result.minimumColumnSoil,remaining*Cell);
+                if(x==center) result.centerColumnSoil=remaining*Cell;
+                var feet=SurfaceAt(Left+(x+0.5f)*Cell);
+                // Conservative standing clearance; this is not a navigation proof.
+                var clear=true;
+                for(var neighbour=Mathf.Max(0,x-1);neighbour<=Mathf.Min(Columns-1,x+1);neighbour++)
+                    for(var y=0;y<Rows;y++)
+                        if(solid[neighbour,y] && Bottom+y*Cell<feet+1.65f && Bottom+(y+1)*Cell>feet+0.01f) clear=false;
+                if(clear)
+                {
+                    result.standableColumns++;
+                    run=run>0 && Mathf.Abs(feet-previousFeet)<=0.52f?run+1:1;
+                    result.longestWalkableRun=Mathf.Max(result.longestWalkableRun,run*Cell);
+                    previousFeet=feet;
+                }
+                else run=0;
+            }
+            result.retainedFraction=result.initialCells>0?result.remainingCells/(float)result.initialCells:1;
+            return result;
         }
 
         // Sample the authoritative occupancy grid, so disabled/deferred colliders

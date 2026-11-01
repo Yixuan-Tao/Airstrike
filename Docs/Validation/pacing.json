@@ -1,0 +1,515 @@
+{
+    "version": "0.5.1",
+    "error": "",
+    "passed": true,
+    "seed": 1739,
+    "runtimeErrors": 0,
+    "windowWidth": 14.0,
+    "simulationSecondsPerCase": 120.0,
+    "timeScale": 8.0,
+    "scope": "One first-wave bomber; protected surface-following player; legacy cadence replay uses current shallow craters. Patrol is a position probe, not validated navigation.",
+    "scenarios": [
+        {
+            "name": "legacy_targeted_stationary",
+            "seconds": 120.08424377441406,
+            "bombs": 16,
+            "impacts": 16,
+            "localImpacts": 14,
+            "releasesAwayFromPlayer": 0,
+            "releaseTimes": [
+                4.693505764007568,
+                7.226871967315674,
+                20.16097068786621,
+                22.694360733032228,
+                35.77740478515625,
+                38.31092071533203,
+                51.3792610168457,
+                53.91332244873047,
+                66.98656463623047,
+                69.51993560791016,
+                82.60215759277344,
+                85.13554382324219,
+                98.21417999267578,
+                100.74760437011719,
+                113.81670379638672,
+                116.35009002685547
+            ],
+            "impactXs": [
+                -12.88512897491455,
+                -1.0000089406967164,
+                -13.040877342224121,
+                -1.2702170610427857,
+                -13.010363578796387,
+                -1.2262665033340455,
+                -12.971399307250977,
+                -1.1884160041809083,
+                -12.923766136169434,
+                -1.1611709594726563,
+                -12.888484001159668,
+                -1.1480450630187989,
+                -12.855048179626465,
+                -1.130845546722412,
+                -12.822297096252442,
+                -1.1013625860214234
+            ],
+            "samples": [
+                {
+                    "seconds": 30.044008255004884,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9787735939025879,
+                        "minimumColumnSoil": 6.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 415,
+                        "standableColumns": 24
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9787735939025879,
+                        "minimumColumnSoil": 6.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 415,
+                        "standableColumns": 24
+                    }
+                },
+                {
+                    "seconds": 60.05141830444336,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9504716992378235,
+                        "minimumColumnSoil": 5.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 403,
+                        "standableColumns": 24
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9504716992378235,
+                        "minimumColumnSoil": 5.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 403,
+                        "standableColumns": 24
+                    }
+                },
+                {
+                    "seconds": 90.08055877685547,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9221698045730591,
+                        "minimumColumnSoil": 4.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 391,
+                        "standableColumns": 25
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9221698045730591,
+                        "minimumColumnSoil": 4.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 391,
+                        "standableColumns": 25
+                    }
+                },
+                {
+                    "seconds": 120.08424377441406,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.8938679099082947,
+                        "minimumColumnSoil": 3.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 379,
+                        "standableColumns": 25
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.8938679099082947,
+                        "minimumColumnSoil": 3.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 10.0,
+                        "initialCells": 424,
+                        "remainingCells": 379,
+                        "standableColumns": 25
+                    }
+                }
+            ],
+            "finalWindow": {
+                "centerX": -6.0,
+                "width": 14.0,
+                "retainedFraction": 0.8938679099082947,
+                "minimumColumnSoil": 3.5,
+                "centerColumnSoil": 7.5,
+                "longestWalkableRun": 10.0,
+                "initialCells": 424,
+                "remainingCells": 379,
+                "standableColumns": 25
+            }
+        },
+        {
+            "name": "new_stationary",
+            "seconds": 120.08010864257813,
+            "bombs": 22,
+            "impacts": 21,
+            "localImpacts": 5,
+            "releasesAwayFromPlayer": 15,
+            "releaseTimes": [
+                6.1619720458984379,
+                12.028778076171875,
+                17.90118408203125,
+                23.768325805664064,
+                29.235122680664064,
+                34.568572998046878,
+                40.43623352050781,
+                48.30357360839844,
+                53.103759765625,
+                57.23735046386719,
+                63.90534973144531,
+                68.86103820800781,
+                74.72784423828125,
+                79.39460754394531,
+                83.92825317382813,
+                89.40138244628906,
+                95.26849365234375,
+                101.13575744628906,
+                106.46986389160156,
+                111.13786315917969,
+                115.67164611816406,
+                119.94677734375
+            ],
+            "impactXs": [
+                -6.099668979644775,
+                21.21726417541504,
+                -23.675514221191408,
+                3.6655333042144777,
+                29.125829696655275,
+                -18.68083381652832,
+                8.599169731140137,
+                -27.36789321899414,
+                -4.980391025543213,
+                14.188607215881348,
+                -27.330921173095704,
+                -4.241261959075928,
+                23.029081344604493,
+                -27.28925132751465,
+                -6.206441402435303,
+                19.20464324951172,
+                -26.093685150146486,
+                1.1637049913406373,
+                26.000511169433595,
+                -24.878414154052736,
+                -3.7049922943115236
+            ],
+            "samples": [
+                {
+                    "seconds": 30.035125732421876,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 1.0,
+                        "minimumColumnSoil": 7.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 11.5,
+                        "initialCells": 424,
+                        "remainingCells": 424,
+                        "standableColumns": 27
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 1.0,
+                        "minimumColumnSoil": 7.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 11.5,
+                        "initialCells": 424,
+                        "remainingCells": 424,
+                        "standableColumns": 27
+                    }
+                },
+                {
+                    "seconds": 60.03741455078125,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9905660152435303,
+                        "minimumColumnSoil": 7.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 7.0,
+                        "initialCells": 424,
+                        "remainingCells": 420,
+                        "standableColumns": 25
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9905660152435303,
+                        "minimumColumnSoil": 7.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 7.0,
+                        "initialCells": 424,
+                        "remainingCells": 420,
+                        "standableColumns": 25
+                    }
+                },
+                {
+                    "seconds": 90.06806945800781,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9811320900917053,
+                        "minimumColumnSoil": 6.5,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 7.0,
+                        "initialCells": 424,
+                        "remainingCells": 416,
+                        "standableColumns": 24
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9811320900917053,
+                        "minimumColumnSoil": 6.5,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 7.0,
+                        "initialCells": 424,
+                        "remainingCells": 416,
+                        "standableColumns": 24
+                    }
+                },
+                {
+                    "seconds": 120.08010864257813,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9622641801834106,
+                        "minimumColumnSoil": 6.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 7.0,
+                        "initialCells": 424,
+                        "remainingCells": 408,
+                        "standableColumns": 22
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9622641801834106,
+                        "minimumColumnSoil": 6.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 7.0,
+                        "initialCells": 424,
+                        "remainingCells": 408,
+                        "standableColumns": 22
+                    }
+                }
+            ],
+            "finalWindow": {
+                "centerX": -6.0,
+                "width": 14.0,
+                "retainedFraction": 0.9622641801834106,
+                "minimumColumnSoil": 6.0,
+                "centerColumnSoil": 7.0,
+                "longestWalkableRun": 7.0,
+                "initialCells": 424,
+                "remainingCells": 408,
+                "standableColumns": 22
+            }
+        },
+        {
+            "name": "new_patrol",
+            "seconds": 120.09312438964844,
+            "bombs": 22,
+            "impacts": 21,
+            "localImpacts": 5,
+            "releasesAwayFromPlayer": 16,
+            "releaseTimes": [
+                6.1611175537109379,
+                12.028106689453125,
+                17.917495727539064,
+                23.784835815429689,
+                29.252395629882814,
+                34.59382629394531,
+                40.46083068847656,
+                48.20143127441406,
+                52.87510681152344,
+                57.00852966308594,
+                63.80992126464844,
+                68.87855529785156,
+                74.74617004394531,
+                79.41294860839844,
+                83.94880676269531,
+                89.41587829589844,
+                95.28916931152344,
+                101.15739440917969,
+                106.49192810058594,
+                111.15898132324219,
+                115.69282531738281,
+                119.95976257324219
+            ],
+            "impactXs": [
+                -6.030126571655273,
+                21.241294860839845,
+                -23.570144653320314,
+                3.742953300476074,
+                29.229305267333986,
+                -18.0,
+                9.262598037719727,
+                -27.350147247314454,
+                -5.56218147277832,
+                13.624283790588379,
+                -27.303922653198243,
+                -3.7656235694885256,
+                23.53118324279785,
+                -27.26368522644043,
+                -6.178179740905762,
+                19.160688400268556,
+                -26.06447982788086,
+                1.2212799787521363,
+                26.027400970458986,
+                -24.89775276184082,
+                -3.707120418548584
+            ],
+            "samples": [
+                {
+                    "seconds": 30.052413940429689,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9905660152435303,
+                        "minimumColumnSoil": 7.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 6.0,
+                        "initialCells": 424,
+                        "remainingCells": 420,
+                        "standableColumns": 25
+                    },
+                    "playerWindow": {
+                        "centerX": -5.320354461669922,
+                        "width": 14.0,
+                        "retainedFraction": 0.9909297227859497,
+                        "minimumColumnSoil": 7.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 5.5,
+                        "initialCells": 441,
+                        "remainingCells": 437,
+                        "standableColumns": 26
+                    }
+                },
+                {
+                    "seconds": 60.07524108886719,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9787735939025879,
+                        "minimumColumnSoil": 6.5,
+                        "centerColumnSoil": 6.5,
+                        "longestWalkableRun": 6.0,
+                        "initialCells": 424,
+                        "remainingCells": 415,
+                        "standableColumns": 24
+                    },
+                    "playerWindow": {
+                        "centerX": -7.360916614532471,
+                        "width": 14.0,
+                        "retainedFraction": 0.9794050455093384,
+                        "minimumColumnSoil": 6.5,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 7.5,
+                        "initialCells": 437,
+                        "remainingCells": 428,
+                        "standableColumns": 25
+                    }
+                },
+                {
+                    "seconds": 90.08256530761719,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9599056839942932,
+                        "minimumColumnSoil": 6.0,
+                        "centerColumnSoil": 6.0,
+                        "longestWalkableRun": 6.0,
+                        "initialCells": 424,
+                        "remainingCells": 407,
+                        "standableColumns": 23
+                    },
+                    "playerWindow": {
+                        "centerX": -3.977092981338501,
+                        "width": 14.0,
+                        "retainedFraction": 0.9594594836235046,
+                        "minimumColumnSoil": 6.0,
+                        "centerColumnSoil": 7.0,
+                        "longestWalkableRun": 4.0,
+                        "initialCells": 444,
+                        "remainingCells": 426,
+                        "standableColumns": 23
+                    }
+                },
+                {
+                    "seconds": 120.09312438964844,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9457547068595886,
+                        "minimumColumnSoil": 6.0,
+                        "centerColumnSoil": 6.0,
+                        "longestWalkableRun": 6.0,
+                        "initialCells": 424,
+                        "remainingCells": 401,
+                        "standableColumns": 23
+                    },
+                    "playerWindow": {
+                        "centerX": -8.699819564819336,
+                        "width": 14.0,
+                        "retainedFraction": 0.9494252800941467,
+                        "minimumColumnSoil": 6.0,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 9.0,
+                        "initialCells": 435,
+                        "remainingCells": 413,
+                        "standableColumns": 26
+                    }
+                }
+            ],
+            "finalWindow": {
+                "centerX": -6.0,
+                "width": 14.0,
+                "retainedFraction": 0.9457547068595886,
+                "minimumColumnSoil": 6.0,
+                "centerColumnSoil": 6.0,
+                "longestWalkableRun": 6.0,
+                "initialCells": 424,
+                "remainingCells": 401,
+                "standableColumns": 23
+            }
+        }
+    ],
+    "checks": [
+        "legacy_targeted_stationary: a single live first-wave flight produced repeated physical bomb impacts.",
+        "new_stationary: a single live first-wave flight produced repeated physical bomb impacts.",
+        "new_patrol: a single live first-wave flight produced repeated physical bomb impacts.",
+        "New normal bombing releases ordnance beyond the old player-proximity gate.",
+        "The controlled new flight concentrates a smaller fraction of explosions inside the fourteen-unit anchor region.",
+        "The stationary new-cadence fixture retains at least three units of excavatable soil in every sampled column after 120 simulated seconds.",
+        "No runtime errors during the three controlled terrain observations."
+    ]
+}

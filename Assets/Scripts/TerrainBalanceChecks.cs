@@ -65,6 +65,8 @@ namespace Airstrike
             try
             {
                 var top = shallow.SurfaceAt(0);
+                var initialWindow=shallow.InspectWindow(0);
+                var initialSoil=shallow.SolidCount;
                 for (var i = 0; i < 6; i++)
                 {
                     legacy.Carve(new Vector2(0, legacy.SurfaceAt(0) + 0.16f), 2.1f);
@@ -75,6 +77,8 @@ namespace Airstrike
                 check(report.shallowRepeatedDepth > 1 && report.shallowRepeatedDepth <= 3.1f
                     && report.shallowRepeatedDepth < report.legacyRepeatedDepth * 0.5f,
                     "Six hits at one site deepen the crater gradually while leaving soil above bedrock.");
+                check(shallow.SolidCount>initialSoil*0.95f && shallow.InspectWindow(0).centerColumnSoil<initialWindow.centerColumnSoil*0.7f,
+                    "A concentrated crater consumes local digging depth even while more than ninety-five percent of global terrain remains.");
                 var before = shallow.SolidCount;
                 shallow.CarveBlast(new Vector2(0, shallow.SurfaceAt(0) + 0.16f), false);
                 check(shallow.SolidCount < before,

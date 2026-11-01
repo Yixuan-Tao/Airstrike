@@ -8,7 +8,8 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
-        public const string Version = "0.5.0";
+        public const string Version = "0.5.1";
+        public event System.Action<Vector2> HostileImpact;
         public const int MaximumLives = 6;
         public Material[] Palette;
         public Camera MainCamera;
@@ -88,6 +89,7 @@ namespace Airstrike
             BestWave = Application.isBatchMode ? 0 : PlayerPrefs.GetInt("Skybreach.BestWave",0);
             BeginWave();
             GameplayAutomation.AttachIfRequested(this);
+            PacingAutomation.AttachIfRequested(this);
             if (!Application.isBatchMode && !Application.isEditor) Cursor.visible = false;
         }
 
@@ -335,6 +337,7 @@ namespace Airstrike
                     if(pilot!=null && Vector2.Distance(pilot.transform.position,position)<3.3f
                         && Ground.BlastTransmission(position,pilot.transform.position)>0.2f) pilot.Expire();
             Ground.CarveBlast(position,rocket);
+            if(!rocket) HostileImpact?.Invoke(position);
             Flash(position,rocket?2.0f:2.8f);
             CameraRig.Shake(rocket?0.08f:0.16f);
             PlaySound(1);

@@ -42,6 +42,7 @@ namespace Airstrike
             public List<string> waveObservations = new List<string>();
             public int authoredTransports, transportRocketDrops, empTargetsCleared, rescueLifeGain, maximumRescueLives;
             public bool bootsSurviveRespawn, optionalResourcesExpired;
+            public float normalFirstBombDelay, normalBombInterval;
         }
         private static GameplayAutomation active;
         private AirstrikeGame game;
@@ -112,7 +113,7 @@ namespace Airstrike
             var bombsBefore=game.BombsDropped;
             yield return new WaitForSeconds(1.5f);
             Check(fixture!=null && fixture.transform.position.x-aircraftStart.x>3,"Enemy aircraft traverses the arena.");
-            Check(game.BombsDropped>bombsBefore,"Enemy AI drops a live bomb near the player.");
+            Check(game.BombsDropped==bombsBefore,"The opening approach gives the player time before normal bombers begin firing.");
             freezeAircraft=true;
             foreach(var aircraft in game.Aircraft) { aircraft.Speed=0; aircraft.AttacksEnabled=false; }
             foreach(var projectile in UnityEngine.Object.FindObjectsByType<CombatProjectile>(FindObjectsSortMode.None))
@@ -174,6 +175,7 @@ namespace Airstrike
             game.Player.Body.position=new Vector3(-12,game.Ground.SurfaceAt(-12)+1.1f,0);
             game.Player.Body.linearVelocity=Vector3.zero;
             game.SpawnInterval=0.2f;
+            var enemiesToClear=game.Kills+game.HostileAircraftCount+game.EnemiesPending;
             var deadline=Time.time+12;
             while(game.Wave<2 && Time.time<deadline)
             {
@@ -189,12 +191,13 @@ namespace Airstrike
                 yield return null;
             }
             game.TestControls=new CombatInput { aim=new Vector2(-6,8) };
-            Check(game.Kills>=3 && game.Score>=300,"Aimed rockets destroy aircraft and award score.");
+            Check(game.Kills>=enemiesToClear && game.Score>0,"Aimed rockets destroy the scheduled opening aircraft and award score.");
             Check(game.Wave>=2,"Clearing all threats advances the wave.");
             Check(report.maximumRockets==1,"Held fire respects one simultaneous rocket.");
             report.defaultMaximumRockets=report.maximumRockets;
             report.kills=game.Kills; report.score=game.Score; report.terrainCellsRemoved=game.Ground.RemovedCount;
 
+            yield return PacingChecks.Run(game,report,Check,AllowLiveFixture);
             yield return TerrainBalanceChecks.Run(game,report,Check);
             yield return CombatFeelChecks.Run(game,report,Check);
             yield return BattleVarietyChecks.Run(game,report,Check,AllowLiveFixture);

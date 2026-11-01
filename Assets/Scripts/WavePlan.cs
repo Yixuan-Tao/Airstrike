@@ -35,12 +35,12 @@ namespace Airstrike
         private static readonly AircraftSpawn F=new AircraftSpawn(AircraftRole.FastBomber);
         private static readonly AircraftSpawn H=new AircraftSpawn(AircraftRole.Helicopter);
         private static readonly WaveDefinition[] Opening = {
-            new WaveDefinition("FIRST CONTACT",2.7f,B,B,B),
-            new WaveDefinition("FAST MOVERS",2.5f,B,F,B,F),
-            new WaveDefinition("ROCKET LOCK",2.5f,H,B,F,B),
-            new WaveDefinition("HARD TARGETS",2.2f,A,F,B,H,F),
-            new WaveDefinition("CROSS FIRE",2.0f,F,H,F,B,H,F),
-            new WaveDefinition("HOLD THE SECTOR",1.8f,H,F,A,H,F,F,B)
+            new WaveDefinition("FIRST CONTACT",3.4f,B),
+            new WaveDefinition("FAST MOVERS",3.4f,B,F),
+            new WaveDefinition("ROCKET LOCK",3.2f,B,F,H),
+            new WaveDefinition("HARD TARGETS",2.9f,A,B,F,H),
+            new WaveDefinition("CROSS FIRE",2.7f,B,F,H,F,H),
+            new WaveDefinition("HOLD THE SECTOR",2.5f,H,F,A,H,F,B)
         };
 
         public static WaveDefinition Get(int wave)

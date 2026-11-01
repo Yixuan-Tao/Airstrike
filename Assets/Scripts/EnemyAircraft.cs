@@ -12,6 +12,9 @@ namespace Airstrike
         public bool Armored { get; private set; }
         public bool IsSupplyTransport => Role==AircraftRole.SupplyTransport;
         public SupplyKind Cargo { get; private set; }
+        public int NormalBombsReleased { get; private set; }
+        public float LastNormalBombAt { get; private set; }
+        public Vector2 LastNormalBombPosition { get; private set; }
         public bool IsTelegraphing => warningUntil > 0;
         public Vector2 LockedAim { get; private set; }
         public int ScoreValue => Role==AircraftRole.Helicopter?175:Role==AircraftRole.FastBomber?125:Armored?150:100;
@@ -32,7 +35,7 @@ namespace Airstrike
             Health=armored?180:role==AircraftRole.Helicopter?130:role==AircraftRole.FastBomber?80:100;
             Speed=IsSupplyTransport?5.8f:role==AircraftRole.FastBomber?8.2f+Mathf.Min(wave,10)*0.35f:
                 role==AircraftRole.Helicopter?3.4f+Mathf.Min(wave,8)*0.1f:4.2f+Mathf.Min(wave,10)*0.45f;
-            weaponAt=Time.time+(role==AircraftRole.FastBomber?0.35f:role==AircraftRole.Helicopter?0.7f:1.2f);
+            weaponAt=Time.time+(role==AircraftRole.Bomber?NormalBombInterval():role==AircraftRole.FastBomber?0.35f:role==AircraftRole.Helicopter?0.7f:1.2f);
             gameObject.layer=GameArt.EnemyLayer;
             var box=gameObject.AddComponent<BoxCollider>();
             box.size=role==AircraftRole.Helicopter?new Vector3(3.4f,1.2f,2):new Vector3(3.3f,1.2f,2.4f);
@@ -92,11 +95,19 @@ namespace Airstrike
             }
             if(Role==AircraftRole.Helicopter) UpdateHelicopter(p);
             else if(Role==AircraftRole.FastBomber) UpdateFastBomber(p);
-            else if(Time.time>=weaponAt && Mathf.Abs(p.x-game.Player.Body.position.x)<8.5f)
+            else if(Time.time>=weaponAt && p.x>=-29 && p.x<=29)
             {
-                weaponAt=Time.time+Mathf.Max(1.3f,2.5f-game.Wave*0.08f);
-                game.DropBomb((Vector2)p+Vector2.down*0.75f,new Vector2(direction*Speed*0.2f,-1));
+                weaponAt=Time.time+NormalBombInterval();
+                LastNormalBombAt=Time.time; LastNormalBombPosition=(Vector2)p+Vector2.down*0.75f;
+                NormalBombsReleased++;
+                game.DropBomb(LastNormalBombPosition,new Vector2(direction*Speed*0.2f,-1));
             }
+        }
+
+        private float NormalBombInterval()
+        {
+            var pressure=Mathf.Clamp(SpawnWave-6,0,10)*0.05f;
+            return Random.Range(4-pressure,6-pressure);
         }
 
         private void UpdateFastBomber(Vector3 p)
