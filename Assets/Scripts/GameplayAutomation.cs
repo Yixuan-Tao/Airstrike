@@ -35,6 +35,10 @@ namespace Airstrike
             public float visualStrideDistance;
             public bool visualReturnedInactive;
             public bool upgradesSurviveRespawn;
+            public int legacyBombCells, shallowBombCells, liveBombCells;
+            public float legacyBombDepth, shallowBombDepth, legacyRepeatedDepth, shallowRepeatedDepth;
+            public List<float> legacyTerrainRetention = new List<float>();
+            public List<float> shallowTerrainRetention = new List<float>();
             public List<string> waveObservations = new List<string>();
         }
         private static GameplayAutomation active;
@@ -188,6 +192,7 @@ namespace Airstrike
             report.defaultMaximumRockets=report.maximumRockets;
             report.kills=game.Kills; report.score=game.Score; report.terrainCellsRemoved=game.Ground.RemovedCount;
 
+            yield return TerrainBalanceChecks.Run(game,report,Check);
             yield return CombatFeelChecks.Run(game,report,Check);
             yield return BattleVarietyChecks.Run(game,report,Check,AllowLiveFixture);
             yield return PresentationChecks.Run(game,report,Check);

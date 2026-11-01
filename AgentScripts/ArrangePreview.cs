@@ -27,8 +27,8 @@ public static class ArrangePreview
         game.SpawnSupply(SupplyKind.RocketSlot,game.Player.Body.position);
         game.SpawnSupply(SupplyKind.Piercing,game.Player.Body.position);
         game.SpawnSupply(SupplyKind.RocketSlot,new Vector2(3,4.5f));
-        game.Ground.Carve(new Vector2(3,-0.2f),2);
-        game.Ground.Carve(new Vector2(-14,-0.3f),1.7f);
+        game.Ground.CarveBlast(new Vector2(3,game.Ground.SurfaceAt(3)+0.16f),false);
+        game.Ground.CarveBlast(new Vector2(-14,game.Ground.SurfaceAt(-14)+0.16f),false);
         Physics.SyncTransforms();
         game.Explode((Vector2)game.Player.Body.position+new Vector2(-2.4f,-1.3f),false);
         return new {staged=true,aircraft=game.Aircraft.Count,removedCells=game.Ground.RemovedCount,coverAbsorption=game.LastCoverAbsorption};

@@ -90,13 +90,15 @@ namespace Airstrike
 
             player.Respawn();
             yield return new WaitForSeconds(2.3f);
-            game.Ground.Carve(new Vector2(19,-3),0.8f);
-            game.Ground.Carve(new Vector2(22,-3),1.2f);
+            // Keep a full shielding wall before the first shallow blast, with a
+            // thinner, partly transmitting wall after that blast excavates it.
+            game.Ground.Carve(new Vector2(19.5f,-3),0.55f);
+            game.Ground.Carve(new Vector2(22,-3),1.05f);
             Warp(player,new Vector3(22,-3,0),Vector3.zero);
             var constraints=player.Body.constraints;
             player.Body.constraints=RigidbodyConstraints.FreezeAll;
             var health=player.Health;
-            game.Explode(new Vector2(19,-3),false);
+            game.Explode(new Vector2(19.5f,-3),false);
             report.coveredDamage=health-player.Health;
             report.coverExposure=game.LastBlastExposure;
             check(report.coveredDamage==0 && report.coverExposure<0.05f && game.LastDamageBlocked>0,
@@ -104,10 +106,10 @@ namespace Airstrike
             check(game.CoverEvents>0 && game.CoverFeedbackUntil>Time.time,"A shielded explosion produces visible cover feedback.");
             yield return new WaitForSeconds(0.1f);
             health=player.Health;
-            game.Explode(new Vector2(19,-3),false);
+            game.Explode(new Vector2(19.5f,-3),false);
             report.exposedDamage=health-player.Health;
             report.breachedExposure=game.LastBlastExposure;
-            check(report.exposedDamage>report.coveredDamage+10 && report.breachedExposure>report.coverExposure+0.4f,
+            check(report.exposedDamage>report.coveredDamage+5 && report.breachedExposure>report.coverExposure+0.25f,
                 "A second explosion damages the player after the first blast breaches the cover.");
             player.Body.constraints=constraints;
             Warp(player,new Vector3(-6,game.Ground.SurfaceAt(-6)+0.9f,0),Vector3.zero);

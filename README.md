@@ -1,10 +1,16 @@
-# Airstrike / SKYBREACH v0.4.0
+# Airstrike / SKYBREACH v0.4.1
 
 Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，通过地形掩护躲避轰炸。
 
 ![运行场景预览](Docs/Images/skybreach.png)
 
 画面采用自制的低模美术初版，仍会继续打磨。预览由真实运行场景离屏生成，调整过敌机与坑洞位置，不是人工实玩录像。
+
+## v0.4.1 地形消耗调整
+
+普通炸弹改为较窄、较浅的弹坑，玩家火箭也缩小开挖范围，避免少量轰炸就耗尽土层。右键主动挖掘保留原规则，持续轰炸仍会逐渐挖深。爆炸伤害范围独立计算，未随弹坑一起缩小。
+
+具体参数与受控命中对比见 [地形平衡说明](Docs/TERRAIN_BALANCE.md)。该对比是固定落点的地形验收，不是对实际六波实战的寿命承诺。
 
 ## v0.4 的画面更新
 
@@ -92,7 +98,7 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 & './AgentScripts/VerifyStandalone.ps1'
 ```
 
-通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.4.0-Windows.zip`。
+通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.4.1-Windows.zip`。
 
 独立程序与依赖位于 `Builds/Skybreach`；复制给其他电脑时需要整个文件夹。Unity 缓存、构建输出和本机日志不入库。
 

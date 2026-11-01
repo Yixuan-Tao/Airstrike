@@ -8,7 +8,7 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
-        public const string Version = "0.4.0";
+        public const string Version = "0.4.1";
         public Material[] Palette;
         public Camera MainCamera;
         public SoldierController Player { get; private set; }
@@ -265,7 +265,7 @@ namespace Airstrike
                         Player.Body.AddForce(new Vector3((Player.transform.position.x-position.x)*2,3,0)*LastBlastExposure,ForceMode.Impulse);
                 }
             }
-            Ground.Carve(position,rocket?1.5f:2.1f);
+            Ground.CarveBlast(position,rocket);
             Flash(position,rocket?2.0f:2.8f);
             CameraRig.Shake(rocket?0.08f:0.16f);
             PlaySound(1);

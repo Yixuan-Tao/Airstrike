@@ -1,11 +1,11 @@
-param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.4.0')
+param([ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.4.1')
 $ErrorActionPreference = 'Stop'
 $projectPath = Split-Path $PSScriptRoot -Parent
 $buildPath = Join-Path $projectPath 'Builds\Skybreach'
 $archivePath = Join-Path $projectPath ('Builds\Skybreach-v' + $Version + '-Windows.zip')
 if (!(Test-Path -LiteralPath (Join-Path $buildPath 'Skybreach.exe'))) { throw 'Build the Windows player first.' }
-@'
-SKYBREACH v0.4 - Windows 2.5D combat prototype
+@"
+SKYBREACH v$Version - Windows 2.5D combat prototype
 
 解压整个文件夹后运行 Skybreach.exe。请保留程序旁边的数据目录和 DLL。
 
@@ -18,10 +18,10 @@ Esc：暂停或继续
 R：重新开始
 暂停或结算时 Q：退出
 
-v0.4：统一黄昏场景、分节人物动作、地形断面和爆炸烟尘。保留三类敌人、两种补给与前六波配置；升级本局复活后保留，重新开始时清空。
+v0.4.1：普通炸弹改为较窄、较浅的弹坑，玩家火箭也缩小开挖范围，延长地形可调整的时间。持续轰炸仍会逐渐挖深，右键主动挖掘保持原样。保留三类敌人、两种补给与前六波配置。
 当前使用占位美术。键鼠手感、声音及长时间性能请以实际试玩为准。
 
 源码：https://github.com/Yixuan-Tao/Airstrike
-'@ | Set-Content -LiteralPath (Join-Path $buildPath '游玩说明.txt') -Encoding UTF8
+"@ | Set-Content -LiteralPath (Join-Path $buildPath '游玩说明.txt') -Encoding UTF8
 Compress-Archive -LiteralPath $buildPath -DestinationPath $archivePath -CompressionLevel Optimal -Force
 [pscustomobject]@{ archive=$archivePath; bytes=(Get-Item -LiteralPath $archivePath).Length; sha256=(Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash }

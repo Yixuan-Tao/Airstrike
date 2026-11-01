@@ -1,23 +1,23 @@
 {
-  "checked_at": "2026-11-01T13:52:52.8680997+08:00",
-  "prototype": "SKYBREACH v0.4.0",
+  "checked_at": "2026-11-01T16:22:30.4693649+08:00",
+  "prototype": "SKYBREACH v0.4.1",
   "entry_scene": "Assets/Scenes/Prototype.unity",
   "unity_version": "6000.3.27f2",
   "urp_version": "17.3.0",
   "build": {
     "status": "completed",
     "result": "Succeeded",
-    "buildId": "build_2e39606b9717",
+    "buildId": "build_1ed9a342863e",
     "platform": "StandaloneWindows64",
-    "totalSizeBytes": 103801056,
-    "buildTimeMs": 22125,
+    "totalSizeBytes": 103806338,
+    "buildTimeMs": 14352,
     "totalErrors": 0,
     "totalWarnings": 0
   },
   "build_output": "Builds/Skybreach/Skybreach.exe",
-  "gameplay_assembly_sha256": "F0809CB67F010E9DFA30D87901053640C4907BBBFEDB4FF591C760828E1F3A2E",
+  "gameplay_assembly_sha256": "A0BE1BCD84EE6394D0DBDECFD86BC5593EEB2772BCF8E367F506838F533BC768",
   "standalone_exit_code": 0,
-  "standalone_checks": 64,
+  "standalone_checks": 72,
   "standalone_report": "Docs/Validation/standalone.json",
   "frame_progress": {
     "state": "met",
@@ -25,9 +25,9 @@
     "timedOut": false,
     "member": "UnityEngine.Time.frameCount",
     "op": "changed",
-    "value": 11701,
-    "initialValue": 11688,
-    "elapsedMs": 102,
+    "value": 2243,
+    "initialValue": 2230,
+    "elapsedMs": 108,
     "framesObserved": 2
   },
   "preview": "Docs/Images/skybreach.png",
@@ -35,10 +35,10 @@
   "preview_visually_reviewed": true,
   "visual_comparison": "Docs/ART_DIRECTION.md",
   "windows_archive": {
-    "name": "Skybreach-v0.4.0-Windows.zip",
-    "bytes": 39852700,
-    "sha256": "AD8911FE2D91A92563DEE1729E8138865DB11A2D3BAEB954CC12838200D95C5B",
-    "zip_entries": 198,
+    "name": "Skybreach-v0.4.1-Windows.zip",
+    "bytes": 39867987,
+    "sha256": "58FFB8C4B8D2BDD5CB1E682E74CE9379857D573D0C034E200A77064FEECA49A0",
+    "zip_entries": 202,
     "required_files_verified": true
   },
   "verification_limits": [
@@ -49,5 +49,16 @@
   ],
   "external_asset_datasets_used": [],
   "original_apk_code_or_art_included": false,
-  "computer_use_used": false
+  "computer_use_used": false,
+  "terrain_balance": {
+    "single_bomb_cells_before": 24,
+    "single_bomb_cells_after": 4,
+    "single_bomb_depth_before": 2.0,
+    "single_bomb_depth_after": 0.5,
+    "repeated_six_hit_depth_before": 8.0,
+    "repeated_six_hit_depth_after": 3.0,
+    "retained_after_108_impacts_before": 0.26669803261756897,
+    "retained_after_108_impacts_after": 0.7986829876899719,
+    "scope": "Fixed impact fixtures, not an actual six-wave playthrough."
+  }
 }

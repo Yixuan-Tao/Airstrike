@@ -9,6 +9,8 @@ namespace Airstrike
     {
         public const int Columns = 128, Rows = 18;
         public const float Cell = 0.5f, Left = -32, Bottom = -8;
+        public const float BombCraterWidth = 1.05f, BombCraterDepth = 0.65f;
+        public const float RocketCraterWidth = 0.85f, RocketCraterDepth = 0.75f;
         private const int ChunkWidth = 8;
         private readonly bool[,] solid = new bool[Columns, Rows];
         private readonly int[] originalTop = new int[Columns];
@@ -71,19 +73,32 @@ namespace Airstrike
             return Mathf.Clamp01(1 - thickness / 0.75f);
         }
 
-        public int Carve(Vector2 center, float radius)
+        // Blast damage/reach and excavated soil are separate: ordinary ordnance
+        // makes a shallow crater instead of consuming several layers at once.
+        public int CarveBlast(Vector2 center, bool playerRocket)
         {
-            var minX = Mathf.Clamp(Mathf.FloorToInt((center.x - radius - Left) / Cell), 0, Columns - 1);
-            var maxX = Mathf.Clamp(Mathf.FloorToInt((center.x + radius - Left) / Cell), 0, Columns - 1);
-            var minY = Mathf.Clamp(Mathf.FloorToInt((center.y - radius - Bottom) / Cell), 1, Rows - 1);
-            var maxY = Mathf.Clamp(Mathf.FloorToInt((center.y + radius - Bottom) / Cell), 1, Rows - 1);
+            return CarveEllipse(center, playerRocket ? RocketCraterWidth : BombCraterWidth,
+                playerRocket ? RocketCraterDepth : BombCraterDepth);
+        }
+
+        public int Carve(Vector2 center, float radius) => CarveEllipse(center, radius, radius);
+
+        private int CarveEllipse(Vector2 center, float horizontalRadius, float verticalRadius)
+        {
+            if (horizontalRadius <= 0 || verticalRadius <= 0) return 0;
+            var minX = Mathf.Clamp(Mathf.FloorToInt((center.x - horizontalRadius - Left) / Cell), 0, Columns - 1);
+            var maxX = Mathf.Clamp(Mathf.FloorToInt((center.x + horizontalRadius - Left) / Cell), 0, Columns - 1);
+            var minY = Mathf.Clamp(Mathf.FloorToInt((center.y - verticalRadius - Bottom) / Cell), 1, Rows - 1);
+            var maxY = Mathf.Clamp(Mathf.FloorToInt((center.y + verticalRadius - Bottom) / Cell), 1, Rows - 1);
             var changed = new HashSet<int>();
             var removed = 0;
             for (var x = minX; x <= maxX; x++)
                 for (var y = minY; y <= maxY; y++)
                 {
                     var p = new Vector2(Left + (x + 0.5f) * Cell, Bottom + (y + 0.5f) * Cell);
-                    if (!solid[x, y] || (p - center).sqrMagnitude > radius * radius) continue;
+                    var dx = (p.x - center.x) / horizontalRadius;
+                    var dy = (p.y - center.y) / verticalRadius;
+                    if (!solid[x, y] || dx * dx + dy * dy > 1) continue;
                     solid[x, y] = false;
                     removed++;
                     changed.Add(x / ChunkWidth);
