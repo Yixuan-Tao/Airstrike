@@ -10,32 +10,38 @@ namespace Airstrike
         public int SpawnWave { get; private set; }
         public int Health { get; private set; }
         public bool Armored { get; private set; }
+        public int AttackRank { get; private set; }
         public bool IsSupplyTransport => Role==AircraftRole.SupplyTransport;
         public SupplyKind Cargo { get; private set; }
         public int NormalBombsReleased { get; private set; }
         public float LastNormalBombAt { get; private set; }
         public Vector2 LastNormalBombPosition { get; private set; }
+        internal float BombTimeRemaining => bombTimeLeft;
         public bool IsTelegraphing => warningUntil > 0;
         public Vector2 LockedAim { get; private set; }
         public int ScoreValue => Role==AircraftRole.Helicopter?175:Role==AircraftRole.FastBomber?125:Armored?150:100;
         private AirstrikeGame game;
         private int direction, burstLeft;
         private float altitude, weaponAt, phase, warningUntil, nextBurst, age;
-        private bool dead, tintActive;
+        private bool dead, tintActive, falling;
+        private float bombTimeLeft, crashAge;
+        private Vector2 crashVelocity;
+        private Transform[] crashSmoke;
         private Renderer[] modelRenderers;
         private MaterialPropertyBlock hitProperties;
         private float hitUntil;
         private Transform model, rotor;
         private LineRenderer warningLine;
 
-        public void Initialize(AirstrikeGame owner,int travelDirection,int wave,AircraftRole role,bool armored)
+        public void Initialize(AirstrikeGame owner,int travelDirection,int wave,AircraftRole role,bool armored,int attackRank)
         {
-            game=owner; direction=travelDirection; SpawnWave=wave; Role=role; Armored=armored;
+            game=owner; direction=travelDirection; SpawnWave=wave; Role=role; Armored=armored; AttackRank=attackRank;
             altitude=transform.position.y; phase=Random.Range(0,6.28f);
             Health=armored?180:role==AircraftRole.Helicopter?130:role==AircraftRole.FastBomber?80:100;
             Speed=IsSupplyTransport?5.8f:role==AircraftRole.FastBomber?8.2f+Mathf.Min(wave,10)*0.35f:
                 role==AircraftRole.Helicopter?3.4f+Mathf.Min(wave,8)*0.1f:4.2f+Mathf.Min(wave,10)*0.45f;
-            weaponAt=Time.time+(role==AircraftRole.Bomber?NormalBombInterval():role==AircraftRole.FastBomber?0.35f:role==AircraftRole.Helicopter?0.7f:1.2f);
+            if(role==AircraftRole.Bomber) bombTimeLeft=NormalBombInterval();
+            weaponAt=Time.time+(role==AircraftRole.FastBomber?0.35f:0.7f);
             gameObject.layer=GameArt.EnemyLayer;
             var box=gameObject.AddComponent<BoxCollider>();
             box.size=role==AircraftRole.Helicopter?new Vector3(3.4f,1.2f,2):new Vector3(3.3f,1.2f,2.4f);
@@ -63,7 +69,9 @@ namespace Airstrike
 
         private void Update()
         {
-            if(dead || game==null || !game.Playing) return;
+            if(game==null || !game.Playing) return;
+            if(falling) { UpdateCrash(); return; }
+            if(dead) return;
             age+=Time.deltaTime;
             if(IsSupplyTransport && age>14) { Escape(); return; }
             if(tintActive && Time.time>=hitUntil)
@@ -95,19 +103,20 @@ namespace Airstrike
             }
             if(Role==AircraftRole.Helicopter) UpdateHelicopter(p);
             else if(Role==AircraftRole.FastBomber) UpdateFastBomber(p);
-            else if(Time.time>=weaponAt && p.x>=-29 && p.x<=29)
+            else if(p.x>=-29 && p.x<=29)
             {
-                weaponAt=Time.time+NormalBombInterval();
+                bombTimeLeft-=Time.deltaTime;
+                if(bombTimeLeft>0) return;
+                bombTimeLeft=NormalBombInterval();
                 LastNormalBombAt=Time.time; LastNormalBombPosition=(Vector2)p+Vector2.down*0.75f;
                 NormalBombsReleased++;
-                game.DropBomb(LastNormalBombPosition,new Vector2(direction*Speed*0.2f,-1));
+                game.DropBomb(LastNormalBombPosition,Vector2.down);
             }
         }
 
         private float NormalBombInterval()
         {
-            var pressure=Mathf.Clamp(SpawnWave-6,0,10)*0.05f;
-            return Random.Range(4-pressure,6-pressure);
+            return (Random.Range(0,160 >> AttackRank)*2+1)/25f;
         }
 
         private void UpdateFastBomber(Vector3 p)
@@ -162,7 +171,7 @@ namespace Airstrike
             GetComponent<Collider>().enabled=false; Destroy(gameObject);
         }
 
-        public void Damage(int amount,bool releasePilot=true)
+        public void Damage(int amount,bool directCombatKill=true)
         {
             if(dead || amount<=0) return;
             game.NotifyAircraftHit(); hitUntil=Time.time+0.12f; tintActive=true;
@@ -173,7 +182,41 @@ namespace Airstrike
             dead=true; warningUntil=0;
             if(warningLine!=null) warningLine.enabled=false;
             GetComponent<Collider>().enabled=false;
-            game.AircraftDestroyed(this,releasePilot); Destroy(gameObject);
+            if(!game.AircraftDestroyed(this,directCombatKill)) { Destroy(gameObject); return; }
+            falling=true;
+            crashVelocity=new Vector2(direction*Mathf.Min(Speed*0.35f,3),-1.5f);
+            var charred=new MaterialPropertyBlock();
+            charred.SetColor("_BaseColor",new Color(0.18f,0.20f,0.22f));
+            foreach(var renderer in modelRenderers) renderer.SetPropertyBlock(charred);
+            crashSmoke=new Transform[3];
+            for(var i=0;i<crashSmoke.Length;i++)
+                crashSmoke[i]=GameArt.Shape("Crash smoke",PrimitiveType.Sphere,transform,Vector3.zero,Vector3.one,game.Palette[17]).transform;
+        }
+
+        private void UpdateCrash()
+        {
+            var dt=Time.deltaTime;
+            crashAge+=dt;
+            crashVelocity.y-=12*dt;
+            var previous=(Vector2)transform.position;
+            var next=previous+crashVelocity*dt;
+            var belly=Vector2.down*0.45f;
+            var landed=Physics.Linecast(previous+belly,next+belly,out var hit,1<<GameArt.TerrainLayer,QueryTriggerInteraction.Ignore);
+            if(landed || crashAge>3 || Mathf.Abs(next.x)>32)
+            {
+                falling=false;
+                game.FinishCrash(landed?(Vector2?)hit.point:null);
+                Destroy(gameObject);
+                return;
+            }
+            transform.position=next;
+            model.Rotate(Vector3.forward,-direction*145*dt,Space.World);
+            for(var i=0;i<crashSmoke.Length;i++)
+            {
+                var lag=(i+1)*0.085f;
+                crashSmoke[i].localPosition=-(Vector3)crashVelocity*lag+new Vector3(0,0,-0.1f*i);
+                crashSmoke[i].localScale=Vector3.one*(0.35f+i*0.21f);
+            }
         }
     }
 }

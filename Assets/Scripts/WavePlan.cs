@@ -16,16 +16,18 @@ namespace Airstrike
     {
         public readonly AircraftRole Role;
         public readonly bool Armored;
-        public AircraftSpawn(AircraftRole role,bool armored=false) { Role=role; Armored=armored; }
+        public readonly int AttackRank;
+        public int Cost => 1+(Armored?1:0)+AttackRank;
+        public AircraftSpawn(AircraftRole role,bool armored=false,int attackRank=0)
+        { Role=role; Armored=armored; AttackRank=attackRank; }
     }
 
     public sealed class WaveDefinition
     {
         public string Name { get; }
-        public float SpawnSeconds { get; }
         public IReadOnlyList<AircraftSpawn> Spawns { get; }
-        public WaveDefinition(string name,float interval,params AircraftSpawn[] spawns)
-        { Name=name; SpawnSeconds=interval; Spawns=Array.AsReadOnly(spawns); }
+        public WaveDefinition(string name,params AircraftSpawn[] spawns)
+        { Name=name; Spawns=Array.AsReadOnly(spawns); }
     }
 
     public static class WavePlan
@@ -35,28 +37,44 @@ namespace Airstrike
         private static readonly AircraftSpawn F=new AircraftSpawn(AircraftRole.FastBomber);
         private static readonly AircraftSpawn H=new AircraftSpawn(AircraftRole.Helicopter);
         private static readonly WaveDefinition[] Opening = {
-            new WaveDefinition("FIRST CONTACT",3.4f,B),
-            new WaveDefinition("FAST MOVERS",3.4f,B,F),
-            new WaveDefinition("ROCKET LOCK",3.2f,B,F,H),
-            new WaveDefinition("HARD TARGETS",2.9f,A,B,F,H),
-            new WaveDefinition("CROSS FIRE",2.7f,B,F,H,F,H),
-            new WaveDefinition("HOLD THE SECTOR",2.5f,H,F,A,H,F,B)
+            new WaveDefinition("FIRST CONTACT",B),
+            new WaveDefinition("FAST MOVERS",B,F),
+            new WaveDefinition("ROCKET LOCK",B,F,H),
+            new WaveDefinition("HARD TARGETS",A,F,H),
+            new WaveDefinition("CROSS FIRE",B,F,H,F,H,B),
+            new WaveDefinition("HOLD THE SECTOR",H,F,A,H,F,B)
         };
 
-        public static WaveDefinition Get(int wave)
+        public const int MaximumActiveAircraft=12;
+        public static int Budget(int wave) => (int)Math.Floor(Math.Pow(wave,1.12));
+
+        public static WaveDefinition Get(int wave,int runSeed=0)
         {
             if(wave<1) throw new ArgumentOutOfRangeException(nameof(wave));
             if(wave<=Opening.Length) return Opening[wave-1];
-            var count=Math.Min(8+(wave-7)/2,12);
-            var spawns=new AircraftSpawn[count];
-            for(var i=0;i<count;i++) spawns[i]=i%4==0?H:i%4==1?F:wave>=8 && i%3==0?A:B;
-            return new WaveDefinition("ENDLESS SKY",Math.Max(1.15f,1.8f-(wave-6)*0.06f),spawns);
+            var remaining=Budget(wave);
+            var random=new Random(unchecked(runSeed*397+wave));
+            var spawns=new List<AircraftSpawn>();
+            while(remaining>0)
+            {
+                var roll=random.Next(10);
+                var spawn=roll<2?H:roll<4?F:B;
+                if(spawn.Role==AircraftRole.Bomber && remaining>=2)
+                {
+                    var armored=random.Next(4)==0;
+                    var rank=random.Next(3)==0?Math.Min(Math.Min((wave-3)/4,3),remaining-1-(armored?1:0)):0;
+                    spawn=new AircraftSpawn(AircraftRole.Bomber,armored,rank);
+                }
+                spawns.Add(spawn);
+                remaining-=spawn.Cost;
+            }
+            return new WaveDefinition("ENDLESS SKY",spawns.ToArray());
         }
 
         public static SupplyKind? Cargo(int wave)
         {
-            if(wave<2 || wave%2!=0) return null;
-            var cycle=(wave/2-1)%4;
+            if(wave<4 || wave%4!=0) return null;
+            var cycle=(wave/4-1)%4;
             return cycle==0?SupplyKind.RocketSlot:cycle==1?SupplyKind.Piercing:cycle==2?SupplyKind.JumpBoots:SupplyKind.Emp;
         }
     }

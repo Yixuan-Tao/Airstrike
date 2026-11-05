@@ -171,7 +171,7 @@ namespace Airstrike
         {
             Health = 100; JumpsLeft = game.MultiJumpEnabled?int.MaxValue:2; jumpBufferedUntil = -1; Grounded = false;
             waitingForLanding = false; lastGroundedAt = Time.time; groundLock = 0;
-            Body.position = new Vector3(-6,game.Ground.SurfaceAt(-6)+0.9f,0);
+            Body.position = new Vector3(AirstrikeGame.RespawnX,game.Ground.SurfaceAt(AirstrikeGame.RespawnX)+0.9f,0);
             Body.linearVelocity = Vector3.zero;
             protectedUntil = Time.time + 2.2f;
 

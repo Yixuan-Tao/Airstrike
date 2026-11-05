@@ -54,7 +54,7 @@ namespace Airstrike
 
         public static void AttachIfRequested(AirstrikeGame owner)
         {
-            if(active!=null) { active.game=owner; owner.OverrideControls=true; owner.PilotDropChance=0; return; }
+            if(active!=null) { active.game=owner; owner.OverrideControls=true; owner.PilotDropChance=0; owner.CrashChance=0; return; }
             var args=Environment.GetCommandLineArgs();
             for(var i=0;i+1<args.Length;i++)
                 if(args[i]=="--gameplay-smoke") { Begin(owner,args[i+1]); return; }
@@ -68,6 +68,7 @@ namespace Airstrike
             UnityEngine.Random.InitState(50702);
             owner.OverrideControls=true;
             owner.PilotDropChance=0; // Random rescue drops are tested separately with a guaranteed fixture.
+            owner.CrashChance=0;
             DontDestroyOnLoad(driver.gameObject);
             driver.started=Time.realtimeSinceStartup;
             Application.logMessageReceived+=driver.OnLog;
@@ -110,10 +111,11 @@ namespace Airstrike
 
             var fixture=game.SpawnAircraft((Vector2)game.Player.transform.position+new Vector2(-4,9),1);
             var aircraftStart=fixture.transform.position;
-            var bombsBefore=game.BombsDropped;
+            var opening=game.Aircraft.Find(aircraft=>aircraft!=fixture);
+            Check(opening!=null && Mathf.Abs(opening.transform.position.x)>29 && opening.NormalBombsReleased==0,
+                "The scheduled first aircraft starts outside the battle lane without dropping ordnance there.");
             yield return new WaitForSeconds(1.5f);
             Check(fixture!=null && fixture.transform.position.x-aircraftStart.x>3,"Enemy aircraft traverses the arena.");
-            Check(game.BombsDropped==bombsBefore,"The opening approach gives the player time before normal bombers begin firing.");
             freezeAircraft=true;
             foreach(var aircraft in game.Aircraft) { aircraft.Speed=0; aircraft.AttacksEnabled=false; }
             foreach(var projectile in UnityEngine.Object.FindObjectsByType<CombatProjectile>(FindObjectsSortMode.None))
@@ -177,6 +179,7 @@ namespace Airstrike
             game.SpawnInterval=0.2f;
             var enemiesToClear=game.Kills+game.HostileAircraftCount+game.EnemiesPending;
             var deadline=Time.time+12;
+            var clearedAt=-1f;
             while(game.Wave<2 && Time.time<deadline)
             {
                 EnemyAircraft target=null;
@@ -187,12 +190,18 @@ namespace Airstrike
                     target.transform.position=game.Player.transform.position+new Vector3(6,6,0);
                     game.TestControls=new CombatInput { fire=true,aim=target.transform.position };
                 }
-                else game.TestControls=new CombatInput { aim=new Vector2(-6,8) };
+                else
+                {
+                    if(game.EnemiesPending==0 && clearedAt<0) clearedAt=Time.time;
+                    game.TestControls=new CombatInput { aim=new Vector2(-6,8) };
+                }
                 yield return null;
             }
             game.TestControls=new CombatInput { aim=new Vector2(-6,8) };
             Check(game.Kills>=enemiesToClear && game.Score>0,"Aimed rockets destroy the scheduled opening aircraft and award score.");
             Check(game.Wave>=2,"Clearing all threats advances the wave.");
+            Check(clearedAt>0 && Time.time-clearedAt>=1.55f && Time.time-clearedAt<1.8f,
+                "An ordinary wave advances about 1.6 seconds after its last combat aircraft is gone.");
             Check(report.maximumRockets==1,"Held fire respects one simultaneous rocket.");
             report.defaultMaximumRockets=report.maximumRockets;
             report.kills=game.Kills; report.score=game.Score; report.terrainCellsRemoved=game.Ground.RemovedCount;
@@ -203,6 +212,7 @@ namespace Airstrike
             yield return BattleVarietyChecks.Run(game,report,Check,AllowLiveFixture);
             yield return PresentationChecks.Run(game,report,Check);
             yield return SupplyCycleChecks.Run(game,report,Check,AllowLiveFixture);
+            yield return WreckageChecks.Run(game,Check);
 
             game.TestControls=new CombatInput { pause=true };
             yield return null;
@@ -233,7 +243,7 @@ namespace Airstrike
                 game.TestControls=new CombatInput { restart=true };
                 yield return null;
                 yield return null;
-                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0 && game.RocketCapacity==1 && !game.PiercingEnabled && !game.MultiJumpEnabled && game.Supplies.Count==0 && game.Pilots.Count==0,
+                Check(game!=previous && game.Wave==1 && game.Lives==3 && game.Score==0 && game.RocketCapacity==1 && !game.PiercingEnabled && !game.MultiJumpEnabled && game.Supplies.Count==0 && game.Pilots.Count==0 && game.Ground.WreckCells==0 && game.FallingWrecks==0,
                     "Restart resets the battlefield, upgrades and supplies, pass "+(restart+1)+".");
                 report.restarts++;
             }

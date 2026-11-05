@@ -8,9 +8,11 @@ namespace Airstrike
     [DefaultExecutionOrder(-100)]
     public sealed class AirstrikeGame : MonoBehaviour
     {
-        public const string Version = "0.5.1";
+        public const string Version = "0.6.0";
         public event System.Action<Vector2> HostileImpact;
         public const int MaximumLives = 6;
+        public const float RespawnX = -6;
+        private const int MaximumFallingWrecks = 4;
         public Material[] Palette;
         public Camera MainCamera;
         public SoldierController Player { get; private set; }
@@ -35,6 +37,9 @@ namespace Airstrike
         public bool PiercingEnabled { get; private set; }
         public bool MultiJumpEnabled { get; private set; }
         [Range(0,1)] public float PilotDropChance = 0.25f;
+        [Range(0,1)] public float CrashChance = 0.125f;
+        public int FallingWrecks { get; private set; }
+        public int WrecksLanded { get; private set; }
         public int TransportsSpawned, TransportsShotDown, TransportsEscaped, EmpActivations, EmpKills, PilotsSpawned, PilotsRescued;
         public int HostileAircraftCount { get { var count=0; foreach(var aircraft in Aircraft) if(aircraft!=null && !aircraft.IsSupplyTransport) count++; return count; } }
         public int CompletedWaves { get; private set; }
@@ -52,8 +57,9 @@ namespace Airstrike
         public int EnemiesPending { get; private set; }
         public float SurvivalSeconds { get; private set; }
         public float WaveBannerUntil { get; private set; }
-        public float SpawnInterval = -1;
-        public float WaveOpeningSeconds = 1.4f, WaveIntermissionSeconds = 2.6f;
+        internal float SpawnInterval { get; set; } = -1;
+        internal float WaveOpeningSeconds { get; set; } = 0.5f;
+        internal float WaveIntermissionSeconds { get; set; } = 1.6f;
         public bool OverrideControls;
         public CombatInput TestControls;
         public int BestWave { get; private set; }
@@ -63,7 +69,9 @@ namespace Airstrike
         private readonly AudioClip[] sounds = new AudioClip[4];
         private Vector2 lastAim = new Vector2(-3,9);
         private WaveDefinition currentPlan;
-        private int spawnCursor;
+        private int spawnCursor, waveSeed;
+        private float[] entryOffsets;
+        private float waveStarted;
 
         private void Awake()
         {
@@ -73,7 +81,7 @@ namespace Airstrike
             if (Palette == null || Palette.Length < 20) { Debug.LogError("Game palette is missing."); enabled = false; return; }
             if (MainCamera == null) MainCamera = Camera.main;
             Ground = new GameObject("Destructible battlefield").AddComponent<DestructibleGround>();
-            Ground.Initialize(Palette[0],Palette[1],Palette[2],Palette[15],Palette[16]);
+            Ground.Initialize(Palette[0],Palette[1],Palette[2],Palette[15],Palette[16],Palette[19],Palette[7]);
             BuildBackdrop();
             Effects=new GameObject("Battle effects pool").AddComponent<BattleEffects>();
             Effects.Initialize(Palette);
@@ -87,6 +95,7 @@ namespace Airstrike
             audioSource.spatialBlend = 0; audioSource.volume = 0.28f;
             CreateSounds();
             BestWave = Application.isBatchMode ? 0 : PlayerPrefs.GetInt("Skybreach.BestWave",0);
+            waveSeed=System.Environment.TickCount;
             BeginWave();
             GameplayAutomation.AttachIfRequested(this);
             PacingAutomation.AttachIfRequested(this);
@@ -102,24 +111,24 @@ namespace Airstrike
             if (!Playing) return;
             SurvivalSeconds += Time.deltaTime;
             if (respawnAt > 0 && Time.time >= respawnAt) { Player.Respawn(); respawnAt = -1; }
-            if (EnemiesPending > 0 && Time.time >= nextSpawn)
+            if (EnemiesPending > 0 && Time.time >= nextSpawn && HostileAircraftCount<WavePlan.MaximumActiveAircraft)
             {
                 var direction = Random.value < 0.5f ? 1 : -1;
                 var spec=currentPlan.Spawns[spawnCursor++];
                 var height=spec.Role==AircraftRole.Helicopter?Random.Range(8.5f,10.5f):Random.Range(9.2f,13.8f);
-                SpawnAircraft(new Vector2(direction>0?-29:29,height),direction,spec.Role,spec.Armored);
+                SpawnAircraft(new Vector2(direction>0?-35:35,height),direction,spec.Role,spec.Armored,spec.AttackRank);
                 if(spawnCursor==1)
                 {
                     var cargo=WavePlan.Cargo(Wave);
                     if(cargo.HasValue) SpawnTransport(cargo.Value,new Vector2(direction>0?30:-30,8.5f),-direction);
                 }
                 EnemiesPending--;
-                nextSpawn = Time.time + (SpawnInterval>0?SpawnInterval:currentPlan.SpawnSeconds);
+                if(EnemiesPending>0) nextSpawn=SpawnInterval>0?Time.time+SpawnInterval:waveStarted+entryOffsets[spawnCursor];
             }
             Aircraft.RemoveAll(a=>a==null);
             Supplies.RemoveAll(s=>s==null);
             Pilots.RemoveAll(p=>p==null);
-            if (EnemiesPending == 0 && HostileAircraftCount == 0 && HostileProjectilesAlive == 0)
+            if (EnemiesPending == 0 && HostileAircraftCount == 0)
             {
                 if (nextWave < 0)
                 {
@@ -128,6 +137,7 @@ namespace Airstrike
                 }
                 if (Time.time >= nextWave) { Wave++; BeginWave(); }
             }
+            else nextWave=-1;
         }
 
         private CombatInput ReadInput()
@@ -159,19 +169,24 @@ namespace Airstrike
 
         private void BeginWave()
         {
-            currentPlan=WavePlan.Get(Wave); spawnCursor=0;
+            currentPlan=WavePlan.Get(Wave,waveSeed); spawnCursor=0;
             EnemiesPending = currentPlan.Spawns.Count;
-            nextSpawn = Time.time + WaveOpeningSeconds;
+            entryOffsets=new float[EnemiesPending];
+            var spread=Mathf.Min(2.6f+Wave*0.4f,9);
+            for(var i=1;i<entryOffsets.Length;i++) entryOffsets[i]=Random.Range(0.15f,spread);
+            System.Array.Sort(entryOffsets);
+            waveStarted=Time.time+(Wave==1 || SpawnInterval>0?WaveOpeningSeconds:0);
+            nextSpawn=waveStarted;
             nextWave = -1;
             WaveBannerUntil = Time.time + 3.4f;
         }
 
-        public EnemyAircraft SpawnAircraft(Vector2 position, int direction,AircraftRole role=AircraftRole.Bomber,bool armored=false)
+        public EnemyAircraft SpawnAircraft(Vector2 position, int direction,AircraftRole role=AircraftRole.Bomber,bool armored=false,int attackRank=0)
         {
             var go = new GameObject("Raider W"+Wave);
             go.transform.position = position;
             var aircraft = go.AddComponent<EnemyAircraft>();
-            aircraft.Initialize(this,direction,Wave,role,armored);
+            aircraft.Initialize(this,direction,Wave,role,armored,attackRank);
             Aircraft.Add(aircraft);
             return aircraft;
         }
@@ -351,7 +366,7 @@ namespace Airstrike
             Effects.Emit(position,radius);
         }
 
-        public void AircraftDestroyed(EnemyAircraft aircraft,bool releasePilot)
+        public bool AircraftDestroyed(EnemyAircraft aircraft,bool directCombatKill)
         {
             Aircraft.Remove(aircraft);
             if(aircraft.IsSupplyTransport)
@@ -359,11 +374,25 @@ namespace Airstrike
             else
             {
                 Kills++; Score += aircraft.ScoreValue*Wave;
-                if(releasePilot && Random.value<PilotDropChance) SpawnPilot(aircraft.transform.position);
+                if(directCombatKill && Random.value<PilotDropChance) SpawnPilot(aircraft.transform.position);
             }
             Flash(aircraft.transform.position,2.5f);
             PlaySound(1);
             CameraRig.Shake(0.12f);
+            if(!directCombatKill || aircraft.IsSupplyTransport || FallingWrecks>=MaximumFallingWrecks
+                || Mathf.Abs(aircraft.transform.position.x)>30 || Random.value>=CrashChance) return false;
+            FallingWrecks++;
+            return true;
+        }
+
+        public void FinishCrash(Vector2? impact)
+        {
+            FallingWrecks--;
+            if(!impact.HasValue) return;
+            var position=impact.Value;
+            if(Player.Health>0 && Ground.TryPlaceWreck(position,Player.Body.position)) WrecksLanded++;
+            Flash(position,1.4f);
+            PlaySound(1);
         }
 
         public void SoldierDown()

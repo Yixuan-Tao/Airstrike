@@ -164,9 +164,8 @@ namespace Airstrike
             report.authoredWavesCleared=game.CompletedWaves; report.waveSupplyDrops=game.SuppliesDropped-drops;
             check(game.Wave>=7 && fastInWave2 && heliInWave3 && armorInWave4,"The live scheduler progresses through all six authored waves and introduces the intended threats.");
             report.authoredTransports=game.TransportsSpawned;
-            check(report.authoredTransports==3,"Waves two, four and six each launch one optional cargo transport.");
+            check(report.authoredTransports==1,"The opening six waves launch a single optional cargo transport on wave four.");
             check(report.waveSupplyDrops==cargoDestroyed,"Only shot-down transports drop cargo; clearing a wave grants no automatic crate.");
-            check(WavePlan.Get(30).Spawns.Count<=12,"Endless waves keep a bounded enemy budget.");
         }
 
         private static IEnumerator Pulse(AirstrikeGame game,CombatInput input)

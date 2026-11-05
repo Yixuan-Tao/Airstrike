@@ -181,11 +181,17 @@ MonoBehaviour:
   PiercedTargets: 0
   SuppliesDropped: 0
   SuppliesCollected: 0
+  PilotDropChance: 0.25
+  CrashChance: 0.125
+  TransportsSpawned: 0
+  TransportsShotDown: 0
+  TransportsEscaped: 0
+  EmpActivations: 0
+  EmpKills: 0
+  PilotsSpawned: 0
+  PilotsRescued: 0
   BlockedMuzzleShots: 0
   CoverEvents: 0
-  SpawnInterval: -1
-  WaveOpeningSeconds: 1.4
-  WaveIntermissionSeconds: 2.6
   OverrideControls: 0
 --- !u!4 &674771305
 Transform:

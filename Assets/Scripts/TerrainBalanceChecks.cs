@@ -103,7 +103,7 @@ namespace Airstrike
             var root = new GameObject(name);
             root.SetActive(false); // Grid fixtures must never collide with the live world.
             var ground = root.AddComponent<DestructibleGround>();
-            ground.Initialize(game.Palette[0], game.Palette[1], game.Palette[2], game.Palette[15], game.Palette[16]);
+            ground.Initialize(game.Palette[0],game.Palette[1],game.Palette[2],game.Palette[15],game.Palette[16],game.Palette[19],game.Palette[7]);
             return ground;
         }
 

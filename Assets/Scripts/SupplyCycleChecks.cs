@@ -162,11 +162,12 @@ namespace Airstrike
             game.SetPaused(false);
             var wave=game.Wave;
             game.WaveOpeningSeconds=1000; // Keep the next wave's ordinary AI out of the expiry fixture.
+            game.DropBomb(new Vector2(30,22),Vector2.zero);
             keeper.Damage(1000,false);
             deadline=Time.time+1;
             while(game.Wave==wave && Time.time<deadline) yield return null;
-            check(game.Wave>wave && transport!=null && game.Pilots.Count==3 && game.Supplies.Count==3,
-                "The live scheduler enters the next wave while an ignored cargo plane, pilots and crates remain.");
+            check(game.Wave>wave && transport!=null && game.Pilots.Count==3 && game.Supplies.Count==3 && game.HostileProjectilesAlive>0,
+                "The live scheduler enters the next wave while an ignored cargo plane, pilots, crates and a regular bomb remain.");
             keeper=game.SpawnAircraft(new Vector2(34,15),1); keeper.Speed=0; keeper.AttacksEnabled=false;
             // Advance only this opt-in acceptance run's simulation clock; no
             // real-time stability/performance claim follows from this fixture.
