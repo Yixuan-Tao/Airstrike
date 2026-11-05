@@ -19,7 +19,7 @@ namespace Airstrike
         internal float BombTimeRemaining => bombTimeLeft;
         public bool IsTelegraphing => warningUntil > 0;
         public Vector2 LockedAim { get; private set; }
-        public int ScoreValue => Role==AircraftRole.Helicopter?175:Role==AircraftRole.FastBomber?125:Armored?150:100;
+        public int ScoreValue => Role==AircraftRole.Helicopter?game.Rules.HeliScore:Role==AircraftRole.FastBomber?game.Rules.FastScore:Armored?game.Rules.ArmoredScore:game.Rules.BomberScore;
         private AirstrikeGame game;
         private int direction, burstLeft;
         private float altitude, weaponAt, phase, warningUntil, nextBurst, age;
@@ -30,16 +30,23 @@ namespace Airstrike
         private Renderer[] modelRenderers;
         private MaterialPropertyBlock hitProperties;
         private float hitUntil;
+        private float shieldUntil;
         private Transform model, rotor;
         private LineRenderer warningLine;
 
-        public void Initialize(AirstrikeGame owner,int travelDirection,int wave,AircraftRole role,bool armored,int attackRank)
+        public void Initialize(AirstrikeGame owner,int travelDirection,int wave,AircraftRole role,bool armored,int attackRank,bool speedBoosted)
         {
             game=owner; direction=travelDirection; SpawnWave=wave; Role=role; Armored=armored; AttackRank=attackRank;
             altitude=transform.position.y; phase=Random.Range(0,6.28f);
-            Health=armored?180:role==AircraftRole.Helicopter?130:role==AircraftRole.FastBomber?80:100;
-            Speed=IsSupplyTransport?5.8f:role==AircraftRole.FastBomber?8.2f+Mathf.Min(wave,10)*0.35f:
-                role==AircraftRole.Helicopter?3.4f+Mathf.Min(wave,8)*0.1f:4.2f+Mathf.Min(wave,10)*0.45f;
+            var rules=game.Rules;
+            Health=armored?rules.ArmoredHealth:role==AircraftRole.Helicopter?rules.HeliHealth:role==AircraftRole.FastBomber?rules.FastHealth:rules.BomberHealth;
+            Speed=IsSupplyTransport?rules.CargoSpeed:
+                role==AircraftRole.FastBomber?rules.FastSpeed+Mathf.Min(wave,rules.FastGrowthCap)*rules.FastGrowth:
+                role==AircraftRole.Helicopter?rules.HeliSpeed+Mathf.Min(wave,rules.HeliGrowthCap)*rules.HeliGrowth:
+                rules.BomberSpeed+Mathf.Min(wave,rules.BomberGrowthCap)*rules.BomberGrowth;
+            if(role==AircraftRole.Bomber && rules.BomberSpeedJitter>0)
+                Speed+=Random.Range(-rules.BomberSpeedJitter,rules.BomberSpeedJitter);
+            if(speedBoosted) Speed*=rules.SpeedBoostMultiplier;
             if(role==AircraftRole.Bomber) bombTimeLeft=NormalBombInterval();
             weaponAt=Time.time+(role==AircraftRole.FastBomber?0.35f:0.7f);
             gameObject.layer=GameArt.EnemyLayer;
@@ -73,7 +80,7 @@ namespace Airstrike
             if(falling) { UpdateCrash(); return; }
             if(dead) return;
             age+=Time.deltaTime;
-            if(IsSupplyTransport && age>14) { Escape(); return; }
+            if(IsSupplyTransport && age>game.Rules.CargoLifetime) { Escape(); return; }
             if(tintActive && Time.time>=hitUntil)
             {
                 foreach(var renderer in modelRenderers) renderer.SetPropertyBlock(null);
@@ -103,34 +110,34 @@ namespace Airstrike
             }
             if(Role==AircraftRole.Helicopter) UpdateHelicopter(p);
             else if(Role==AircraftRole.FastBomber) UpdateFastBomber(p);
-            else if(p.x>=-29 && p.x<=29)
+            else if(Mathf.Abs(p.x)<=game.Rules.BombLane)
             {
                 bombTimeLeft-=Time.deltaTime;
                 if(bombTimeLeft>0) return;
                 bombTimeLeft=NormalBombInterval();
                 LastNormalBombAt=Time.time; LastNormalBombPosition=(Vector2)p+Vector2.down*0.75f;
                 NormalBombsReleased++;
-                game.DropBomb(LastNormalBombPosition,Vector2.down);
+                game.DropBomb(LastNormalBombPosition,Vector2.down*game.Rules.BombSpeed);
             }
         }
 
         private float NormalBombInterval()
         {
-            return (Random.Range(0,160 >> AttackRank)*2+1)/25f;
+            return (Random.Range(0,Mathf.Max(1,game.Rules.BombCountTicks >> AttackRank))*2+1)/game.Rules.BombTicksPerSecond;
         }
 
         private void UpdateFastBomber(Vector3 p)
         {
             var ahead=(game.Player.Body.position.x-p.x)*direction;
-            if(burstLeft==0 && Time.time>=weaponAt && ahead>0.4f && ahead<7)
+            if(burstLeft==0 && Time.time>=weaponAt && ahead>0.4f && ahead<game.Rules.BurstRange)
             {
-                burstLeft=3; nextBurst=Time.time;
-                weaponAt=Time.time+3.8f;
+                burstLeft=game.Rules.BurstCount; nextBurst=Time.time;
+                weaponAt=Time.time+game.Rules.BurstCooldown;
             }
             if(burstLeft>0 && Time.time>=nextBurst)
             {
                 game.DropBomb((Vector2)p+Vector2.down*0.7f,new Vector2(direction*Speed*0.25f,-2.5f));
-                burstLeft--; nextBurst=Time.time+0.16f;
+                burstLeft--; nextBurst=Time.time+game.Rules.BurstGap;
             }
         }
 
@@ -140,7 +147,8 @@ namespace Airstrike
             if(warningUntil<=0 && Time.time>=weaponAt && Mathf.Abs(p.x-desired)<1.2f)
             {
                 LockedAim=(Vector2)game.Player.Body.position+Vector2.up*0.08f;
-                warningUntil=Time.time+0.85f;
+                if(game.Rules.HeliAimJitter>0) LockedAim+=Random.insideUnitCircle*game.Rules.HeliAimJitter;
+                warningUntil=Time.time+game.Rules.HeliWarning;
                 game.HelicopterWarnings++;
             }
             if(warningUntil<=0) return;
@@ -152,7 +160,7 @@ namespace Airstrike
             if(Time.time<warningUntil) return;
             game.LaunchEnemyRocket(muzzle,LockedAim);
             warningUntil=0; warningLine.enabled=false;
-            weaponAt=Time.time+Mathf.Max(2.4f,3.5f-game.Wave*0.08f);
+            weaponAt=Time.time+Mathf.Max(game.Rules.HeliCooldownFloor,game.Rules.HeliCooldown-game.Wave*game.Rules.HeliCooldownGrowth);
         }
 
         public void SetCargo(SupplyKind kind)
@@ -177,6 +185,11 @@ namespace Airstrike
             game.NotifyAircraftHit(); hitUntil=Time.time+0.12f; tintActive=true;
             hitProperties.SetColor("_BaseColor",new Color(1,0.93f,0.75f));
             foreach(var renderer in modelRenderers) renderer.SetPropertyBlock(hitProperties);
+            if(directCombatKill && Armored && game.Rules.ArmorShield>0 && Time.time>=shieldUntil)
+            {
+                shieldUntil=Time.time+game.Rules.ArmorShield;
+                return;
+            }
             Health-=amount;
             if(Health>0) return;
             dead=true; warningUntil=0;

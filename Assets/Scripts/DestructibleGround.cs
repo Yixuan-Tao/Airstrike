@@ -14,30 +14,38 @@ namespace Airstrike
     // A 2D occupancy grid extruded into a 3D cross-section. Rebuild only touched chunks.
     public sealed class DestructibleGround : MonoBehaviour
     {
-        public const int Columns = 128, Rows = 20;
-        public const float Cell = 0.5f, Left = -32, Bottom = -8;
-        public const float BombCraterWidth = 1.05f, BombCraterDepth = 0.65f;
-        public const float RocketCraterWidth = 0.85f, RocketCraterDepth = 0.75f;
+        private const float Left=-32, Width=64;
         private const int ChunkWidth = 8;
-        public const int WreckWidth = 4, MaximumWreckCells = 24;
-        private readonly bool[,] solid = new bool[Columns, Rows];
-        private readonly bool[,] wreck = new bool[Columns, Rows];
-        private readonly int[] originalTop = new int[Columns];
-        private readonly GameObject[] chunks = new GameObject[Columns / ChunkWidth];
+        private BalanceSettings rules;
+        private int Columns, Rows;
+        private float Cell => rules.TerrainCell;
+        private float Bottom => rules.TerrainBottom;
+        private bool[,] solid, wreck;
+        private int[] originalTop;
+        private GameObject[] chunks;
         private Material[] materials;
         public int SolidCount { get; private set; }
         public int RemovedCount { get; private set; }
         public int WreckCells { get; private set; }
 
-        public void Initialize(Material soil, Material grass, Material deep, Material band, Material sand, Material metal, Material trim)
+        public void Initialize(BalanceSettings settings,Material soil,Material grass,Material deep,Material band,Material sand,Material metal,Material trim)
         {
+            rules=settings;
+            Columns=Mathf.CeilToInt(Width/Cell);
+            var ceiling=Mathf.Max(2,rules.TerrainMean+rules.TerrainHill+rules.TerrainDetail+Cell);
+            Rows=Mathf.Max(rules.BedrockRows+1,Mathf.CeilToInt((ceiling-Bottom)/Cell));
+            solid=new bool[Columns,Rows];
+            wreck=new bool[Columns,Rows];
+            originalTop=new int[Columns];
+            chunks=new GameObject[(Columns+ChunkWidth-1)/ChunkWidth];
             materials = new[] { soil, grass, deep, band, sand, metal, trim };
             for (var x = 0; x < Columns; x++)
             {
                 var worldX = Left + (x + 0.5f) * Cell;
-                var surface = 0.35f + Mathf.Sin(worldX * 0.18f) * 0.33f + Mathf.Sin(worldX * 0.47f) * 0.14f;
+                var surface=rules.TerrainMean+Mathf.Sin(worldX*0.18f)*rules.TerrainHill+Mathf.Sin(worldX*0.47f)*rules.TerrainDetail;
+                originalTop[x]=-1;
                 for (var y = 0; y < Rows; y++)
-                    if (Bottom + (y + 0.5f) * Cell < surface) { solid[x, y] = true; SolidCount++; originalTop[x]=y; }
+                    if (y<rules.BedrockRows || Bottom+(y+0.5f)*Cell<surface) { solid[x,y]=true; SolidCount++; originalTop[x]=y; }
             }
             for (var c = 0; c < chunks.Length; c++)
             {
@@ -54,7 +62,7 @@ namespace Airstrike
         {
             var x = Mathf.Clamp(Mathf.FloorToInt((worldX - Left) / Cell), 0, Columns - 1);
             for (var y = Rows - 1; y >= 0; y--) if (solid[x, y]) return Bottom + (y + 1) * Cell;
-            return Bottom + Cell;
+            return Bottom;
         }
 
         public bool IsSolidAt(Vector2 point)
@@ -74,8 +82,8 @@ namespace Airstrike
             for(var x=first;x<=last;x++)
             {
                 var remaining=0;
-                result.initialCells+=originalTop[x]; // Exclude the retained bedrock row.
-                for(var y=1;y<=originalTop[x];y++) if(solid[x,y] && !wreck[x,y]) remaining++;
+                result.initialCells+=Mathf.Max(0,originalTop[x]+1-rules.BedrockRows);
+                for(var y=rules.BedrockRows;y<=originalTop[x];y++) if(solid[x,y] && !wreck[x,y]) remaining++;
                 result.remainingCells+=remaining;
                 result.minimumColumnSoil=Mathf.Min(result.minimumColumnSoil,remaining*Cell);
                 if(x==center) result.centerColumnSoil=remaining*Cell;
@@ -104,53 +112,54 @@ namespace Airstrike
         {
             var delta = target - origin;
             var length = delta.magnitude;
-            if (length < 0.16f) return 1;
+            if (length < 0.16f || rules.CoverDepth<=0) return 1;
             var direction = delta / length;
-            const float step = Cell / 10;
+            var step = Cell / 10;
             var thickness = 0f;
             for (var distance = 0.08f; distance < length - 0.08f; distance += step)
             {
                 var segment = Mathf.Min(step, length - 0.08f - distance);
                 if (IsSolidAt(origin + direction * (distance + segment * 0.5f))) thickness += segment;
-                if (thickness >= 0.75f) return 0;
+                if (thickness >= rules.CoverDepth) return 0;
             }
-            return Mathf.Clamp01(1 - thickness / 0.75f);
+            return Mathf.Clamp01(1 - thickness / rules.CoverDepth);
         }
 
         // Blast damage/reach and excavated soil are separate: ordinary ordnance
         // makes a shallow crater instead of consuming several layers at once.
         public int CarveBlast(Vector2 center, bool playerRocket)
         {
-            return CarveEllipse(center, playerRocket ? RocketCraterWidth : BombCraterWidth,
-                playerRocket ? RocketCraterDepth : BombCraterDepth);
+            return CarveEllipse(center,playerRocket?rules.RocketCraterX:rules.BombCraterX,
+                playerRocket?rules.RocketCraterY:rules.BombCraterY);
         }
 
         public int Carve(Vector2 center, float radius) => CarveEllipse(center, radius, radius);
 
         public bool TryPlaceWreck(Vector2 impact,Vector2 player)
         {
-            if(WreckCells+WreckWidth>MaximumWreckCells) return false;
-            var first=Mathf.FloorToInt((impact.x-Left)/Cell)-1;
-            if(first<0 || first+WreckWidth>Columns) return false;
+            var width=rules.WreckWidthCells;
+            if(WreckCells+width>rules.WreckCellCap) return false;
+            var first=Mathf.FloorToInt((impact.x-Left)/Cell)-(width-1)/2;
+            if(first<0 || first+width>Columns) return false;
             var row=Mathf.RoundToInt((impact.y-Bottom)/Cell);
             if(row<=0 || row>=Rows || Mathf.Abs(impact.y-(Bottom+row*Cell))>0.05f) return false;
-            var center=Left+(first+WreckWidth*0.5f)*Cell;
+            var center=Left+(first+width*0.5f)*Cell;
             if(Mathf.Abs(center-AirstrikeGame.RespawnX)<2.5f) return false;
             if(Mathf.Abs(center-player.x)<1.75f && Mathf.Abs(impact.y+Cell*0.5f-player.y)<1.4f) return false;
-            for(var x=first;x<first+WreckWidth;x++)
+            for(var x=first;x<first+width;x++)
             {
                 // A single step on a level, supported surface. Never bridge a trench or stack metal.
                 if(!solid[x,row-1] || wreck[x,row-1] || SurfaceAt(Left+(x+0.5f)*Cell)!=Bottom+row*Cell) return false;
             }
             var changed=new HashSet<int>();
-            for(var x=first;x<first+WreckWidth;x++)
+            for(var x=first;x<first+width;x++)
             {
                 solid[x,row]=true;
                 wreck[x,row]=true;
                 MarkChanged(changed,x);
             }
-            WreckCells+=WreckWidth;
-            SolidCount+=WreckWidth;
+            WreckCells+=width;
+            SolidCount+=width;
             foreach(var chunk in changed) Rebuild(chunk);
             Physics.SyncTransforms();
             return true;
@@ -161,8 +170,8 @@ namespace Airstrike
             if (horizontalRadius <= 0 || verticalRadius <= 0) return 0;
             var minX = Mathf.Clamp(Mathf.FloorToInt((center.x - horizontalRadius - Left) / Cell), 0, Columns - 1);
             var maxX = Mathf.Clamp(Mathf.FloorToInt((center.x + horizontalRadius - Left) / Cell), 0, Columns - 1);
-            var minY = Mathf.Clamp(Mathf.FloorToInt((center.y - verticalRadius - Bottom) / Cell), 1, Rows - 1);
-            var maxY = Mathf.Clamp(Mathf.FloorToInt((center.y + verticalRadius - Bottom) / Cell), 1, Rows - 1);
+            var minY = Mathf.Clamp(Mathf.FloorToInt((center.y - verticalRadius - Bottom) / Cell), rules.BedrockRows, Rows - 1);
+            var maxY = Mathf.Clamp(Mathf.FloorToInt((center.y + verticalRadius - Bottom) / Cell), rules.BedrockRows, Rows - 1);
             var changed = new HashSet<int>();
             var removed = 0;
             for (var x = minX; x <= maxX; x++)
@@ -190,7 +199,7 @@ namespace Airstrike
             if(wreck[x,y]) { wreck[x,y]=false; WreckCells--; }
         }
 
-        private static void MarkChanged(HashSet<int> changed,int x)
+        private void MarkChanged(HashSet<int> changed,int x)
         {
             changed.Add(x/ChunkWidth);
             if(x>0) changed.Add((x-1)/ChunkWidth);
@@ -207,7 +216,7 @@ namespace Airstrike
             var triangles = new List<int>[materials.Length];
             for(var i=0;i<triangles.Length;i++) triangles[i]=new List<int>();
             var first = c * ChunkWidth;
-            for (var x = first; x < first + ChunkWidth; x++)
+            for (var x = first; x < Mathf.Min(Columns,first+ChunkWidth); x++)
             {
                 var start = -1;
                 for (var y = 0; y <= Rows; y++)
@@ -228,7 +237,8 @@ namespace Airstrike
                     var mat = wreck[x,y]?5:y<4?2:depth==3 || depth==8?4:depth>6?3:0;
                     Quad(vertices, triangles[mat], new Vector3(l,b,-1.5f), new Vector3(l,t,-1.5f), new Vector3(r,t,-1.5f), new Vector3(r,b,-1.5f));
                     if(wreck[x,y])
-                        Quad(vertices,triangles[6],new Vector3(l+0.08f,b+0.12f,-1.51f),new Vector3(l+0.17f,t-0.12f,-1.51f),new Vector3(r-0.07f,t-0.12f,-1.51f),new Vector3(r-0.15f,b+0.12f,-1.51f));
+                        Quad(vertices,triangles[6],new Vector3(l+0.16f*Cell,b+0.24f*Cell,-1.51f),new Vector3(l+0.34f*Cell,t-0.24f*Cell,-1.51f),
+                            new Vector3(r-0.14f*Cell,t-0.24f*Cell,-1.51f),new Vector3(r-0.30f*Cell,b+0.24f*Cell,-1.51f));
                     if(grass)
                         Quad(vertices,triangles[1],new Vector3(l,t-0.09f,-1.51f),new Vector3(l,t,-1.51f),new Vector3(r,t,-1.51f),new Vector3(r,t-0.09f,-1.51f));
                     Quad(vertices, triangles[mat], new Vector3(r,b,1.5f), new Vector3(r,t,1.5f), new Vector3(l,t,1.5f), new Vector3(l,b,1.5f));
@@ -256,6 +266,7 @@ namespace Airstrike
 
         private void OnDestroy()
         {
+            if(chunks==null) return;
             foreach (var chunk in chunks)
                 if (chunk != null && chunk.GetComponent<MeshFilter>().sharedMesh != null)
                     Destroy(chunk.GetComponent<MeshFilter>().sharedMesh);

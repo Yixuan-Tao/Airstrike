@@ -42,7 +42,7 @@ namespace Airstrike
         {
             if(finished || game==null || !game.Playing) return;
             age+=Time.fixedDeltaTime;
-            if(kind==ProjectileKind.Bomb) velocity.y-=10*Time.fixedDeltaTime;
+            if(kind==ProjectileKind.Bomb) velocity.y-=game.Rules.BombGravity*Time.fixedDeltaTime;
             var direction=velocity.normalized;
             var remaining=velocity.magnitude*Time.fixedDeltaTime;
             var start=(Vector2)transform.position;
@@ -63,7 +63,7 @@ namespace Airstrike
                 else { Impact(hit.point,hit.collider); return; }
             }
             transform.rotation=Quaternion.Euler(0,0,Mathf.Atan2(velocity.y,velocity.x)*Mathf.Rad2Deg-90);
-            var lifetime=IsPlayerRocket?2.5f:kind==ProjectileKind.Bomb?8:4.2f;
+            var lifetime=IsPlayerRocket?game.Rules.RocketLifetime:kind==ProjectileKind.Bomb?8:4.2f;
             if(age>lifetime || Mathf.Abs(transform.position.x)>40 || transform.position.y>25 || transform.position.y<-12) Finish();
         }
 
@@ -87,9 +87,9 @@ namespace Airstrike
 
         private bool TryPierce(EnemyAircraft enemy)
         {
-            if(!piercing || enemy==null || pierced.Count>0) return false;
+            if(!piercing || enemy==null || (game.Rules.PierceLimit>0 && pierced.Count>=game.Rules.PierceLimit)) return false;
             pierced.Add(enemy); game.PiercedTargets++;
-            enemy.Damage(110); game.Flash(enemy.transform.position,0.8f);
+            enemy.Damage(game.Rules.RocketDamage); game.Flash(enemy.transform.position,0.8f);
             return true;
         }
 
@@ -100,7 +100,7 @@ namespace Airstrike
             if(TryPierce(enemy))
             { transform.position=point-velocity.normalized*0.1f; return; }
             transform.position=new Vector3(point.x,point.y,0);
-            game.Explode(point,IsPlayerRocket,pierced);
+            game.Explode(point,IsPlayerRocket,pierced,enemy);
             Finish();
         }
 

@@ -75,7 +75,7 @@ namespace Airstrike
                 "Metal cannot be placed in the respawn corridor or around the player's body.");
             foreach(var site in new[] {-28.25f,-24.75f,-20.75f,-16.75f,4.25f,8.25f,12.25f,16.25f,20.25f})
                 ground.TryPlaceWreck(new Vector2(site,ground.SurfaceAt(site)),center);
-            check(ground.WreckCells==DestructibleGround.MaximumWreckCells
+            check(ground.WreckCells==game.Rules.WreckCellCap
                 && !ground.TryPlaceWreck(new Vector2(27.25f,ground.SurfaceAt(27.25f)),center),
                 "Accumulated wreckage stops at twenty-four cells even with space for more.");
             player.Respawn();

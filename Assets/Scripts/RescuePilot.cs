@@ -4,7 +4,6 @@ namespace Airstrike
 {
     public sealed class RescuePilot : MonoBehaviour
     {
-        public const float Lifetime = 30;
         public bool Landed { get; private set; }
         public bool Finished { get; private set; }
         private AirstrikeGame game;
@@ -33,9 +32,9 @@ namespace Airstrike
         {
             if(Finished || game==null || !game.Playing) return;
             age+=Time.fixedDeltaTime;
-            if(age>Lifetime || transform.position.y<-11) { Expire(); return; }
+            if(age>game.Rules.PilotLifetime || transform.position.y<game.Rules.TerrainBottom-3) { Expire(); return; }
             var p=transform.position;
-            var fall=2.4f*Time.fixedDeltaTime;
+            var fall=game.Rules.PilotFallSpeed*Time.fixedDeltaTime;
             const int mask=1 << GameArt.TerrainLayer;
             Landed=Physics.SphereCast(p,0.4f,Vector3.down,out var floor,fall+0.04f,mask,QueryTriggerInteraction.Ignore);
             if(Landed)
@@ -45,7 +44,7 @@ namespace Airstrike
                 var blocked=Physics.SphereCast(p,0.25f,Vector3.right*direction,out _,0.55f,mask,QueryTriggerInteraction.Ignore);
                 var safe=Physics.Raycast(ahead+Vector3.up*0.2f,Vector3.down,0.85f,mask,QueryTriggerInteraction.Ignore);
                 if(blocked || !safe || Mathf.Abs(p.x)>30) direction=-direction;
-                else p.x+=direction*0.55f*Time.fixedDeltaTime;
+                else p.x+=direction*game.Rules.PilotWalkSpeed*Time.fixedDeltaTime;
             }
             else p.y-=fall;
             transform.position=p; parachute.gameObject.SetActive(!Landed);

@@ -30,8 +30,8 @@ namespace Airstrike
         {
             if(Collected || game==null || !game.Playing) return;
             age+=Time.fixedDeltaTime;
-            if(age>35) { Expire(); return; }
-            var fall=2.2f*Time.fixedDeltaTime;
+            if(age>game.Rules.CrateLifetime) { Expire(); return; }
+            var fall=game.Rules.CrateFallSpeed*Time.fixedDeltaTime;
             Landed=Physics.SphereCast(transform.position,0.32f,Vector3.down,out var hit,fall+0.02f,
                 1 << GameArt.TerrainLayer,QueryTriggerInteraction.Ignore);
             if(Landed) transform.position=new Vector3(transform.position.x,hit.point.y+0.34f,0);

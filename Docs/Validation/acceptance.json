@@ -1,24 +1,29 @@
 {
-  "checked_at": "2026-11-06T02:53:23.9342568+08:00",
-  "prototype": "SKYBREACH v0.6.0",
+  "checked_at": "2026-11-06T07:16:50.1700285+08:00",
+  "prototype": "SKYBREACH v0.7.0",
   "entry_scene": "Assets/Scenes/Prototype.unity",
   "unity_version": "6000.3.27f2",
   "build": {
     "status": "completed",
     "result": "Succeeded",
-    "buildId": "build_210fa03973cc",
+    "buildId": "build_030f9205baab",
     "platform": "StandaloneWindows64",
-    "totalSizeBytes": 103849706,
-    "buildTimeMs": 15438,
+    "totalSizeBytes": 103893391,
+    "buildTimeMs": 10791,
     "totalErrors": 0,
     "totalWarnings": 0
   },
   "build_output": "Builds/Skybreach/Skybreach.exe",
-  "gameplay_assembly_sha256": "A61B854627D810C3EC55694FF7D76BE3B832B5285D7077DFA63AC492BA924508",
   "standalone_exit_code": 0,
   "standalone_checks": 126,
   "standalone_runtime_errors": 0,
   "standalone_report": "Docs/Validation/standalone.json",
+  "menu": {
+    "report": "Docs/Validation/menu.json",
+    "checks": 15,
+    "runtime_errors": 0,
+    "passed": true
+  },
   "pacing_observation": {
     "report": "Docs/Validation/pacing.json",
     "passed": true,
@@ -27,33 +32,38 @@
     "scenarios": 3,
     "seconds_per_scenario": 120.0
   },
+  "balance_table": "Assets/StreamingAssets/Balance.csv",
   "frame_progress": {
     "state": "met",
     "met": true,
     "timedOut": false,
     "member": "UnityEngine.Time.frameCount",
     "op": "changed",
-    "value": 257,
-    "initialValue": 244,
+    "value": 204,
+    "initialValue": 192,
     "elapsedMs": 109,
     "framesObserved": 2
   },
-  "preview": "Docs/Images/skybreach.png",
-  "preview_staged": true,
-  "preview_visually_reviewed": true,
+  "preview": "Docs/Images/mode-menu.png",
+  "previews_visually_reviewed": [
+    "English launcher",
+    "Simplified Chinese launcher",
+    "Simplified Chinese Classic HUD"
+  ],
   "windows_archive": {
-    "name": "Skybreach-v0.6.0-Windows.zip",
-    "bytes": 39816482,
-    "sha256": "D6059EABC3DAFA320D19B06B5FE15C4082AC34085239CA8116BB6226F85A719D",
-    "zip_entries": 179,
+    "name": "Skybreach-v0.7.0-Windows.zip",
+    "bytes": 39833913,
+    "sha256": "16A06022A18DF045845EAF520EEF86258DC16522C614232AA2492185C6062840",
+    "zip_entries": 180,
     "required_files_verified": true,
-    "tested_assembly_verified": true,
+    "tested_assembly_sha256": "1A3991D7716787F07A05E87415EC9857CCB121837EF4AF0DE3D7456F88C5E184",
+    "table_sha256": "5A3D470700E1ACE81CD509BF6B271BB91897CCA51C010A12BF5B58BEC3F03DBB",
     "debug_output_excluded": true
   },
   "verification_limits": [
     "Hidden Windows player with internal control input, nographics and noaudio.",
-    "Controlled physics fixtures and accelerated scheduling. Wreck landing is forced in its fixture.",
-    "Single-bomber pacing scenarios use a protected player. Manual feel, audio, and graphical performance are unverified."
+    "Launcher tests invoke real button callbacks without OS input.",
+    "Pacing scenarios cover PC only and use a protected player. Classic rules are an adaptation and manual balance is unverified."
   ],
   "computer_use_used": false,
   "original_apk_code_or_art_included": false,

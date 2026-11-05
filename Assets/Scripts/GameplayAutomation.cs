@@ -225,7 +225,7 @@ namespace Airstrike
             game.TestControls=new CombatInput();
             Check(!game.Paused && Time.timeScale==1,"Resume restores simulation time.");
 
-            for(var life=0;life<AirstrikeGame.MaximumLives && !game.GameOver;life++)
+            for(var life=0;life<game.MaximumLives && !game.GameOver;life++)
             {
                 var lives=game.Lives;
                 game.Player.ApplyDamage(1000,true);

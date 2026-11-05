@@ -1,0 +1,23 @@
+{
+    "version": "0.7.0",
+    "passed": true,
+    "error": "",
+    "runtimeErrors": 0,
+    "checks": [
+        "The launcher waits for a ruleset before starting a battle.",
+        "One edited table column changes only its selected ruleset.",
+        "An invalid balance row is rejected with the key that needs correction.",
+        "The menu switch enables Simplified Chinese with a CJK glyph.",
+        "The PC entry loads PC settings and carries Chinese into the combat HUD.",
+        "The PC entry preserves hit points and the initial lives.",
+        "Returning to the launcher preserves the language and stops the battle.",
+        "The classic entry applies original-style survival, terrain and fire timing.",
+        "F1's language action updates the active HUD immediately.",
+        "A classic armored aircraft absorbs the first hit with a shield.",
+        "A follow-up hit destroys the aircraft while the shield is down.",
+        "Classic extra rockets can raise the slot count past the PC limit.",
+        "Picking up classic piercing clamps rocket capacity to two.",
+        "A classic hit costs a life and one available upgrade.",
+        "Restarting retains the ruleset and resets the run."
+    ]
+}

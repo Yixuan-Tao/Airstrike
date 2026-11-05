@@ -148,7 +148,7 @@ namespace Airstrike
             deadline=Time.time+15;
             while(game.Wave<=6 && Time.time<deadline)
             {
-                if(seenWaves.Add(game.Wave)) report.waveObservations.Add(game.Wave+": "+game.WaveName+" / "+WavePlan.Get(game.Wave).Spawns.Count+" scheduled");
+                if(seenWaves.Add(game.Wave)) report.waveObservations.Add(game.Wave+": "+game.WaveName+" / "+WavePlan.Get(game.Wave,game.Rules).Spawns.Count+" scheduled");
                 foreach(var aircraft in game.Aircraft.ToArray())
                 {
                     if(aircraft==null) continue;

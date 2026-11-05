@@ -49,10 +49,10 @@ namespace Airstrike
             for(var i=0;i<3;i++) { yield return Pulse(game,new CombatInput { jump=true }); yield return new WaitForSeconds(0.12f); }
             check(player.SuccessfulJumps>=jumps+3 && player.JumpsLeft>2 && !player.Grounded,
                 "Jump boots permit a third jump before landing while ordinary double-jump limits remain separately tested.");
-            Warp(player,new Vector3(player.Body.position.x,SoldierController.MaximumAltitude-0.05f,0));
+            Warp(player,new Vector3(player.Body.position.x,game.Rules.AltitudeLimit-0.05f,0));
             yield return Pulse(game,new CombatInput { jump=true });
             yield return new WaitForSeconds(0.1f);
-            check(player.Body.position.y<=SoldierController.MaximumAltitude+0.01f,
+            check(player.Body.position.y<=game.Rules.AltitudeLimit+0.01f,
                 "Repeated air jumps respect the battle's upper boundary instead of leaving the camera view.");
             var score=game.Score;
             game.SpawnSupply(SupplyKind.JumpBoots,player.Body.position);
@@ -132,7 +132,7 @@ namespace Airstrike
             yield return new WaitForSeconds(0.12f);
             check(game.PilotsRescued==rescued+1 && game.EmpActivations==activations+1,
                 "Removing the blocking wall lets the player collect the nearby pilot and crate.");
-            while(game.Lives<AirstrikeGame.MaximumLives)
+            while(game.Lives<game.MaximumLives)
             {
                 game.SpawnPilot(player.Body.position);
                 yield return new WaitForSeconds(0.08f);
@@ -141,7 +141,7 @@ namespace Airstrike
             game.SpawnPilot(player.Body.position);
             yield return new WaitForSeconds(0.08f);
             report.maximumRescueLives=game.Lives;
-            check(game.Lives==AirstrikeGame.MaximumLives && game.Score==score+150,
+            check(game.Lives==game.MaximumLives && game.Score==score+150,
                 "Rescue lives stop at six and further rescues award score.");
             rescue=game.SpawnPilot(new Vector2(15,7));
             game.Explode(new Vector2(15,7),false);

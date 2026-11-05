@@ -1,16 +1,18 @@
-# Airstrike / SKYBREACH v0.6.0
+# Airstrike / SKYBREACH v0.7.0
 
 Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和挖掘，用火箭击落敌机，通过地形掩护躲避轰炸。
 
-![运行场景预览](Docs/Images/skybreach.png)
+![双入口主菜单](Docs/Images/mode-menu.png)
 
-当前预览通过离屏相机拍摄，场景安排了坠落机身和地面残骸，用于查看它们在战场上的表现。
+## 双入口与数值表
 
-## v0.6 原版波次节奏与坠机残骸
+启动后选 **当前版本** 或 **原版数值**，也可按 **1** 或 **2**。当前版本沿用 v0.6 的 PC 平衡。原版数值以《空袭》4.69 Easy 为基线，在同一 Unity 战场上使用不同的生命、敌机、投弹、补给和地形参数。
 
-每波按原版的 `floor(波次^1.12)` 分配敌机和强化预算。敌机从两侧错开进场，清完战斗机约1.6秒后推进，普通弹药可留到下一波。基础普通机只在战区内累计随机倒计时，平均约6.4秒战区时间投一枚。高速机保留三连投弹，直升机保留瞄准预警。
+**F1** 或主菜单按钮切换简体中文和 English。暂停或结算时按 **M** 回主菜单，**R** 用当前档位重开。语言设置保存，两个档位的最高波次分开记录。
 
-部分被击落的敌机会冒烟坠落，在合适的地面留下半单位高的金属残骸。士兵可以走上残骸，残骸能挡弹，也能被右键挖掘或爆炸清除。浅弹坑规则保留，残骸不会被计入剩余土量。[节奏与残骸规则](Docs/PACING_AND_TERRAIN.md)
+开发工程改 [Balance.csv](Assets/StreamingAssets/Balance.csv)。解压试玩包后改 `Skybreach_Data/StreamingAssets/Balance.csv`。保存对应的 **PC** 或 **Classic** 列，再从菜单开局或按 R 重开即可读取，无需重新构建。[数值表说明](Docs/BALANCE.md)
+
+下列战斗与补给说明对应当前版本（PC）。[v0.6 地形与残骸实景](Docs/Images/skybreach.png) · [节奏与残骸规则](Docs/PACING_AND_TERRAIN.md)
 
 ## v0.5 补给与生命循环
 
@@ -88,6 +90,8 @@ Unity 6.3 侧视 2.5D 空袭生存原型。控制地面士兵移动、跳跃和�
 | 附近挖掘 | 鼠标右键，可按住 |
 | 暂停 / 继续 | Esc |
 | 重新开始 | R |
+| 返回入口 | 暂停或结算时按 M |
+| 切换语言 | F1 |
 | 退出独立程序 | 暂停或结算时按 Q，或关闭窗口 |
 
 默认只有一个火箭位，拾取补给可增至最多三个；未获得跳跳靴时落地恢复两次跳跃。初始三条生命，复活时短暂保护，可通过捕获飞行员补充到六条。飞出画面的战斗敌机会循环飞越战场。
@@ -113,10 +117,11 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 等待 `completed` 和 `Succeeded` 后执行：
 
 ```powershell
+& './AgentScripts/VerifyMenu.ps1'
 & './AgentScripts/VerifyStandalone.ps1'
 ```
 
-通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.6.0-Windows.zip`。`./AgentScripts/VerifyPacing.ps1` 单独运行三组局部地形观测，输出 `Logs/PacingStandalone.json`。
+通过后可运行 `./AgentScripts/PackageWindows.ps1` 生成带游玩说明的 `Builds/Skybreach-v0.7.0-Windows.zip`。`./AgentScripts/VerifyPacing.ps1` 单独运行三组局部地形观测，输出 `Logs/PacingStandalone.json`。
 
 独立程序与依赖位于 `Builds/Skybreach`；复制给其他电脑时需要整个文件夹。Unity 缓存、构建输出和本机日志不入库。
 
@@ -139,7 +144,7 @@ $editorArgs = '-logFile "' + (Join-Path $projectPath 'Logs/BackgroundEditor.log'
 - `Packages/`、`ProjectSettings/`：依赖与项目设置。
 - `Bootstrap.unity` 和对应脚本：早期环境验证，非游戏入口。
 
-CLI 重启编辑器后可能进入空场景；开始 Play Mode 前明确打开 `Assets/Scenes/Prototype.unity`。修改持久脚本后先确认编译完成，运行前开启后台推进并用 `job wait` 验证帧数确实变化，结束后还原覆盖设置。场景和材质通过 Unity API 保存。
+CLI 重启编辑器后可能进入空场景。开始 Play Mode 前明确打开 `Assets/Scenes/Prototype.unity`。后台编辑器默认显示入口，可调用 `StartRun(BalanceMode.PC)` 或 `StartRun(BalanceMode.Classic)` 进入战斗。修改脚本后先确认编译完成，用 `job wait` 验证帧数变化，结束后还原后台运行设置。场景和材质通过 Unity API 保存。
 
 ## 素材和历史
 

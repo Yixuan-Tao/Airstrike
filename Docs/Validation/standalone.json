@@ -2,9 +2,9 @@
     "passed": true,
     "error": "",
     "unityVersion": "6000.3.27f2",
-    "prototypeVersion": "0.6.0",
+    "prototypeVersion": "0.7.0",
     "isEditor": false,
-    "durationSeconds": 78.62832641601563,
+    "durationSeconds": 78.65046691894531,
     "checks": [
         "Gravity and ground collision settle the player.",
         "The scheduled first aircraft starts outside the battle lane without dropping ordnance there.",
@@ -153,9 +153,9 @@
     "breachedExposure": 0.33333325386047366,
     "stage": "No runtime errors or exceptions during acceptance.",
     "observations": [
-        "Before jump: time=3.155662, grounded=True, charges=2, jumps=0, coyote=0, position=(-1.73, 0.84, 0.00), velocity=(7.50, 0.34, 0.00), hp=100, explosions=0",
-        "After first jump: time=3.322333, grounded=False, charges=1, jumps=1, coyote=0, position=(-0.94, 2.06, 0.00), velocity=(1.72, 6.93, 0.00), hp=100, explosions=0",
-        "After second jump: time=3.622339, grounded=False, charges=0, jumps=2, coyote=0, position=(-0.91, 4.14, 0.00), velocity=(0.00, 5.56, 0.00), hp=100, explosions=0"
+        "Before jump: time=3.154086, grounded=True, charges=2, jumps=0, coyote=0, position=(-1.73, 0.84, 0.00), velocity=(7.50, 0.34, 0.00), hp=100, explosions=0",
+        "After first jump: time=3.320954, grounded=False, charges=1, jumps=1, coyote=0, position=(-0.94, 2.06, 0.00), velocity=(1.72, 6.93, 0.00), hp=100, explosions=0",
+        "After second jump: time=3.620959, grounded=False, charges=0, jumps=2, coyote=0, position=(-0.91, 4.14, 0.00), velocity=(0.00, 5.56, 0.00), hp=100, explosions=0"
     ],
     "fastBurstBombs": 3,
     "helicopterWarnings": 1,
@@ -171,7 +171,7 @@
     "duplicateSupplyBonus": 300,
     "visualPoolSize": 16,
     "visualPeakActive": 16,
-    "visualStrideDistance": 12.869867324829102,
+    "visualStrideDistance": 12.825480461120606,
     "visualReturnedInactive": true,
     "upgradesSurviveRespawn": true,
     "legacyBombCells": 24,
@@ -211,6 +211,6 @@
     "maximumRescueLives": 6,
     "bootsSurviveRespawn": true,
     "optionalResourcesExpired": true,
-    "normalFirstBombDelay": 10.935185432434082,
-    "normalBombInterval": 9.968305587768555
+    "normalFirstBombDelay": 10.934782028198243,
+    "normalBombInterval": 9.968969345092774
 }

@@ -1,5 +1,5 @@
 {
-    "version": "0.6.0",
+    "version": "0.7.0",
     "error": "",
     "passed": true,
     "seed": 1739,
@@ -11,50 +11,50 @@
     "scenarios": [
         {
             "name": "legacy_targeted_stationary",
-            "seconds": 120.03755187988281,
+            "seconds": 120.04167175292969,
             "bombs": 16,
             "impacts": 16,
             "localImpacts": 14,
             "releasesAwayFromPlayer": 0,
             "releaseTimes": [
-                5.094351291656494,
-                7.627721786499023,
-                20.562549591064454,
-                23.096250534057618,
-                36.164737701416019,
-                38.69847106933594,
-                51.76681137084961,
-                54.3001708984375,
-                67.36722564697266,
-                69.90058135986328,
-                82.96765899658203,
-                85.50102233886719,
-                98.56796264648438,
-                101.10135650634766,
-                114.17037963867188,
-                116.7037353515625
+                5.093435287475586,
+                7.626805782318115,
+                20.560333251953126,
+                23.09370231628418,
+                36.16176986694336,
+                38.69514083862305,
+                51.76349639892578,
+                54.296871185302737,
+                67.36375427246094,
+                69.89713287353516,
+                82.96495056152344,
+                85.49832916259766,
+                98.56718444824219,
+                101.10055541992188,
+                114.17475128173828,
+                116.70812225341797
             ],
             "impactXs": [
-                -12.686206817626954,
-                -0.9234309792518616,
-                -13.042638778686524,
-                -1.2624012231826783,
-                -13.003798484802246,
-                -1.2183600664138795,
-                -12.963252067565918,
-                -1.1904336214065552,
-                -12.92304515838623,
-                -1.1710015535354615,
-                -12.884599685668946,
-                -1.1532315015792847,
-                -12.856416702270508,
-                -1.1360328197479249,
-                -12.834839820861817,
-                -1.1111774444580079
+                -12.690445899963379,
+                -0.9276980757713318,
+                -13.042533874511719,
+                -1.263872504234314,
+                -13.006752014160157,
+                -1.2229825258255005,
+                -12.965744018554688,
+                -1.192780613899231,
+                -12.923184394836426,
+                -1.170949101448059,
+                -12.885503768920899,
+                -1.1540125608444214,
+                -12.856073379516602,
+                -1.1357733011245728,
+                -12.83493423461914,
+                -1.1111299991607667
             ],
             "samples": [
                 {
-                    "seconds": 30.030555725097658,
+                    "seconds": 30.0282039642334,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
@@ -79,77 +79,77 @@
                     }
                 },
                 {
-                    "seconds": 60.03376007080078,
+                    "seconds": 60.030296325683597,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9457547068595886,
+                        "retainedFraction": 0.948113203048706,
                         "minimumColumnSoil": 5.5,
                         "centerColumnSoil": 7.5,
                         "longestWalkableRun": 9.5,
                         "initialCells": 424,
-                        "remainingCells": 401,
-                        "standableColumns": 24
+                        "remainingCells": 402,
+                        "standableColumns": 23
                     },
                     "playerWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9457547068595886,
+                        "retainedFraction": 0.948113203048706,
                         "minimumColumnSoil": 5.5,
                         "centerColumnSoil": 7.5,
                         "longestWalkableRun": 9.5,
                         "initialCells": 424,
-                        "remainingCells": 401,
-                        "standableColumns": 24
+                        "remainingCells": 402,
+                        "standableColumns": 23
                     }
                 },
                 {
-                    "seconds": 90.03450012207031,
+                    "seconds": 90.03367614746094,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9174528121948242,
+                        "retainedFraction": 0.9198113083839417,
                         "minimumColumnSoil": 4.5,
                         "centerColumnSoil": 7.5,
                         "longestWalkableRun": 9.5,
                         "initialCells": 424,
-                        "remainingCells": 389,
+                        "remainingCells": 390,
                         "standableColumns": 24
                     },
                     "playerWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9174528121948242,
+                        "retainedFraction": 0.9198113083839417,
                         "minimumColumnSoil": 4.5,
                         "centerColumnSoil": 7.5,
                         "longestWalkableRun": 9.5,
                         "initialCells": 424,
-                        "remainingCells": 389,
+                        "remainingCells": 390,
                         "standableColumns": 24
                     }
                 },
                 {
-                    "seconds": 120.03755187988281,
+                    "seconds": 120.04167175292969,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.8891509175300598,
+                        "retainedFraction": 0.8915094137191773,
                         "minimumColumnSoil": 3.5,
                         "centerColumnSoil": 7.5,
                         "longestWalkableRun": 9.5,
                         "initialCells": 424,
-                        "remainingCells": 377,
+                        "remainingCells": 378,
                         "standableColumns": 24
                     },
                     "playerWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.8891509175300598,
+                        "retainedFraction": 0.8915094137191773,
                         "minimumColumnSoil": 3.5,
                         "centerColumnSoil": 7.5,
                         "longestWalkableRun": 9.5,
                         "initialCells": 424,
-                        "remainingCells": 377,
+                        "remainingCells": 378,
                         "standableColumns": 24
                     }
                 }
@@ -157,105 +157,80 @@
             "finalWindow": {
                 "centerX": -6.0,
                 "width": 14.0,
-                "retainedFraction": 0.8891509175300598,
+                "retainedFraction": 0.8915094137191773,
                 "minimumColumnSoil": 3.5,
                 "centerColumnSoil": 7.5,
                 "longestWalkableRun": 9.5,
                 "initialCells": 424,
-                "remainingCells": 377,
+                "remainingCells": 378,
                 "standableColumns": 24
             }
         },
         {
             "name": "new_stationary",
-            "seconds": 120.03785705566406,
+            "seconds": 120.0488052368164,
             "bombs": 13,
             "impacts": 13,
             "localImpacts": 4,
             "releasesAwayFromPlayer": 9,
             "releaseTimes": [
-                4.026863098144531,
-                9.627304077148438,
-                10.8275146484375,
-                14.163665771484375,
-                21.7640380859375,
-                37.63116455078125,
-                44.16471862792969,
-                57.765167236328128,
-                72.43215942382813,
-                86.69996643066406,
-                90.300048828125,
-                100.8350830078125,
-                114.97109985351563
+                4.0285186767578129,
+                9.628608703613282,
+                10.828636169433594,
+                14.162025451660157,
+                21.762123107910158,
+                37.63190460205078,
+                44.165733337402347,
+                57.771339416503909,
+                72.43965911865235,
+                86.71154022216797,
+                90.31511688232422,
+                100.84857940673828,
+                114.9820785522461
             ],
             "impactXs": [
-                -18.879108428955079,
-                7.162952423095703,
-                12.743877410888672,
-                28.256969451904298,
-                -8.719063758850098,
-                -7.478621006011963,
-                22.90243911743164,
-                13.601859092712403,
-                9.261040687561036,
-                3.0648863315582277,
-                19.805221557617189,
-                -3.7535452842712404,
-                -10.573169708251954
+                -18.871397018432618,
+                7.169040203094482,
+                12.749124526977539,
+                28.249374389648439,
+                -8.719612121582032,
+                -7.479594707489014,
+                22.90274429321289,
+                13.625809669494629,
+                9.266573905944825,
+                3.0839271545410158,
+                19.840578079223634,
+                -3.7596077919006349,
+                -10.579683303833008
             ],
             "samples": [
                 {
-                    "seconds": 30.030838012695314,
+                    "seconds": 30.030052185058595,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9905660152435303,
+                        "retainedFraction": 0.9929245114326477,
                         "minimumColumnSoil": 7.0,
                         "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 6.0,
+                        "longestWalkableRun": 6.5,
                         "initialCells": 424,
-                        "remainingCells": 420,
+                        "remainingCells": 421,
                         "standableColumns": 25
                     },
                     "playerWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9905660152435303,
+                        "retainedFraction": 0.9929245114326477,
                         "minimumColumnSoil": 7.0,
                         "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 6.0,
+                        "longestWalkableRun": 6.5,
                         "initialCells": 424,
-                        "remainingCells": 420,
+                        "remainingCells": 421,
                         "standableColumns": 25
                     }
                 },
                 {
-                    "seconds": 60.031890869140628,
-                    "anchorWindow": {
-                        "centerX": -6.0,
-                        "width": 14.0,
-                        "retainedFraction": 0.9858490824699402,
-                        "minimumColumnSoil": 7.0,
-                        "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 5.0,
-                        "initialCells": 424,
-                        "remainingCells": 418,
-                        "standableColumns": 25
-                    },
-                    "playerWindow": {
-                        "centerX": -6.0,
-                        "width": 14.0,
-                        "retainedFraction": 0.9858490824699402,
-                        "minimumColumnSoil": 7.0,
-                        "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 5.0,
-                        "initialCells": 424,
-                        "remainingCells": 418,
-                        "standableColumns": 25
-                    }
-                },
-                {
-                    "seconds": 90.03337097167969,
+                    "seconds": 60.03820037841797,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
@@ -280,7 +255,32 @@
                     }
                 },
                 {
-                    "seconds": 120.03785705566406,
+                    "seconds": 90.04845428466797,
+                    "anchorWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9858490824699402,
+                        "minimumColumnSoil": 7.0,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 5.0,
+                        "initialCells": 424,
+                        "remainingCells": 418,
+                        "standableColumns": 25
+                    },
+                    "playerWindow": {
+                        "centerX": -6.0,
+                        "width": 14.0,
+                        "retainedFraction": 0.9858490824699402,
+                        "minimumColumnSoil": 7.0,
+                        "centerColumnSoil": 7.5,
+                        "longestWalkableRun": 5.0,
+                        "initialCells": 424,
+                        "remainingCells": 418,
+                        "standableColumns": 25
+                    }
+                },
+                {
+                    "seconds": 120.0488052368164,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
@@ -319,69 +319,69 @@
         },
         {
             "name": "new_patrol",
-            "seconds": 120.04833984375,
+            "seconds": 120.04110717773438,
             "bombs": 13,
             "impacts": 13,
             "localImpacts": 4,
             "releasesAwayFromPlayer": 8,
             "releaseTimes": [
-                4.02685546875,
-                9.627059936523438,
-                10.827072143554688,
-                14.161651611328125,
-                21.76171875,
-                37.62860107421875,
-                44.162017822265628,
-                57.764678955078128,
-                72.43270874023438,
-                86.701904296875,
-                90.30194091796875,
-                100.83563232421875,
-                114.98159790039063
+                4.0275115966796879,
+                9.628143310546875,
+                10.828369140625,
+                14.161941528320313,
+                21.763458251953126,
+                37.63348388671875,
+                44.16693115234375,
+                57.768768310546878,
+                72.43701171875,
+                86.70632934570313,
+                90.30670166015625,
+                100.8402099609375,
+                114.97378540039063
             ],
             "impactXs": [
-                -18.87913703918457,
-                7.161768436431885,
-                12.74180793762207,
-                28.24761199951172,
-                -8.719767570495606,
-                -7.479740142822266,
-                22.900522232055665,
-                13.601374626159668,
-                9.260418891906739,
-                3.0712249279022219,
-                19.81139373779297,
-                -3.759674072265625,
-                -10.3805513381958
+                -18.876163482666017,
+                7.166779041290283,
+                12.747852325439454,
+                28.248916625976564,
+                -8.715143203735352,
+                -7.478725433349609,
+                22.90182113647461,
+                13.603334426879883,
+                9.260908126831055,
+                3.0702507495880129,
+                19.81185531616211,
+                -3.759418249130249,
+                -10.579484939575196
             ],
             "samples": [
                 {
-                    "seconds": 30.028533935546876,
+                    "seconds": 30.0328369140625,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9929245114326477,
+                        "retainedFraction": 0.9905660152435303,
                         "minimumColumnSoil": 7.0,
                         "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 6.5,
+                        "longestWalkableRun": 6.0,
                         "initialCells": 424,
-                        "remainingCells": 421,
+                        "remainingCells": 420,
                         "standableColumns": 25
                     },
                     "playerWindow": {
-                        "centerX": -5.308526992797852,
+                        "centerX": -5.310657978057861,
                         "width": 14.0,
-                        "retainedFraction": 0.9931972622871399,
+                        "retainedFraction": 0.9909297227859497,
                         "minimumColumnSoil": 7.0,
                         "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 6.5,
+                        "longestWalkableRun": 6.0,
                         "initialCells": 441,
-                        "remainingCells": 438,
+                        "remainingCells": 437,
                         "standableColumns": 26
                     }
                 },
                 {
-                    "seconds": 60.032562255859378,
+                    "seconds": 60.035491943359378,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
@@ -394,7 +394,7 @@
                         "standableColumns": 25
                     },
                     "playerWindow": {
-                        "centerX": -7.381436824798584,
+                        "centerX": -7.380030155181885,
                         "width": 14.0,
                         "retainedFraction": 0.986270010471344,
                         "minimumColumnSoil": 7.0,
@@ -406,7 +406,7 @@
                     }
                 },
                 {
-                    "seconds": 90.0352783203125,
+                    "seconds": 90.04000854492188,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
@@ -419,7 +419,7 @@
                         "standableColumns": 25
                     },
                     "playerWindow": {
-                        "centerX": -3.955491065979004,
+                        "centerX": -3.9576497077941896,
                         "width": 14.0,
                         "retainedFraction": 0.9797297120094299,
                         "minimumColumnSoil": 7.0,
@@ -431,27 +431,27 @@
                     }
                 },
                 {
-                    "seconds": 120.04833984375,
+                    "seconds": 120.04110717773438,
                     "anchorWindow": {
                         "centerX": -6.0,
                         "width": 14.0,
-                        "retainedFraction": 0.9787735939025879,
+                        "retainedFraction": 0.9693396091461182,
                         "minimumColumnSoil": 7.0,
                         "centerColumnSoil": 7.5,
-                        "longestWalkableRun": 3.5,
+                        "longestWalkableRun": 4.0,
                         "initialCells": 424,
-                        "remainingCells": 415,
+                        "remainingCells": 411,
                         "standableColumns": 23
                     },
                     "playerWindow": {
-                        "centerX": -8.7186279296875,
+                        "centerX": -8.721660614013672,
                         "width": 14.0,
-                        "retainedFraction": 0.9793103337287903,
+                        "retainedFraction": 0.9701149463653565,
                         "minimumColumnSoil": 7.0,
                         "centerColumnSoil": 7.0,
-                        "longestWalkableRun": 6.5,
+                        "longestWalkableRun": 4.5,
                         "initialCells": 435,
-                        "remainingCells": 426,
+                        "remainingCells": 422,
                         "standableColumns": 25
                     }
                 }
@@ -459,12 +459,12 @@
             "finalWindow": {
                 "centerX": -6.0,
                 "width": 14.0,
-                "retainedFraction": 0.9787735939025879,
+                "retainedFraction": 0.9693396091461182,
                 "minimumColumnSoil": 7.0,
                 "centerColumnSoil": 7.5,
-                "longestWalkableRun": 3.5,
+                "longestWalkableRun": 4.0,
                 "initialCells": 424,
-                "remainingCells": 415,
+                "remainingCells": 411,
                 "standableColumns": 23
             }
         }

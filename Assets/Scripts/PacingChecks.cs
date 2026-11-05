@@ -9,12 +9,13 @@ namespace Airstrike
     {
         public static IEnumerator Run(AirstrikeGame game,GameplayAutomation.Report report,Action<bool,string> check,Action<EnemyAircraft,bool> live)
         {
-            check(WavePlan.Get(1).Spawns.Count==1 && WavePlan.Get(2).Spawns.Count==2 && WavePlan.Get(3).Spawns.Count==3,
+            var rules=game.Rules;
+            check(WavePlan.Get(1,rules).Spawns.Count==1 && WavePlan.Get(2,rules).Spawns.Count==2 && WavePlan.Get(3,rules).Spawns.Count==3,
                 "The first three waves introduce combat with one, two and three aircraft.");
-            check(WavePlan.Budget(6)==7 && WavePlan.Budget(10)==13 && WavePlan.Budget(20)==28 && WavePlan.Budget(30)==45
-                && Enumerable.Range(1,40).All(wave=>WavePlan.Get(wave).Spawns.Sum(spawn=>spawn.Cost)==WavePlan.Budget(wave)),
+            check(WavePlan.Budget(6,rules)==7 && WavePlan.Budget(10,rules)==13 && WavePlan.Budget(20,rules)==28 && WavePlan.Budget(30,rules)==45
+                && Enumerable.Range(1,40).All(wave=>WavePlan.Get(wave,rules).Spawns.Sum(spawn=>spawn.Cost)==WavePlan.Budget(wave,rules)),
                 "The first forty wave plans spend the original wave budget on aircraft and upgrades.");
-            check(Enumerable.Range(1,32).All(wave=>WavePlan.Cargo(wave).HasValue==(wave%4==0)),
+            check(Enumerable.Range(1,32).All(wave=>WavePlan.Cargo(wave,rules).HasValue==(wave%4==0)),
                 "Cargo opportunities occur every fourth wave.");
             var bomber=game.SpawnAircraft(new Vector2(34,10),1);
             bomber.Speed=0; live(bomber,true);

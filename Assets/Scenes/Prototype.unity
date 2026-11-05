@@ -181,8 +181,6 @@ MonoBehaviour:
   PiercedTargets: 0
   SuppliesDropped: 0
   SuppliesCollected: 0
-  PilotDropChance: 0.25
-  CrashChance: 0.125
   TransportsSpawned: 0
   TransportsShotDown: 0
   TransportsEscaped: 0
